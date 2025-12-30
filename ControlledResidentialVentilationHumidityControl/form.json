@@ -12,14 +12,15 @@
       "type": "ExpansionPanel",
       "caption": "Innensensoren (Temperatur + Feuchte)",
       "items": [
+
         {
           "type": "Label",
-          "caption": "Pro Sensor werden eine Feuchte- und eine Temperaturvariable benötigt.\nTyp: Float | Lesbar | z. B. KNX DPT 9.007 / 9.001"
+          "caption": "Je Sensor werden zwei Float-Variablen benötigt:\n• Feuchte (% rF, z. B. KNX DPT 9.007)\n• Temperatur (°C, z. B. KNX DPT 9.001)\nNicht konfigurierte Sensoren werden ignoriert."
         },
 
         {
           "type": "RowLayout",
-          "visible": "SensorCount >= 1",
+          "visible": ["SensorCount", ">=", 1],
           "items": [
             { "type": "SelectVariable", "name": "HumiditySensor1", "caption": "Sensor 1 – Feuchte (%)" },
             { "type": "SelectVariable", "name": "TemperatureSensor1", "caption": "Sensor 1 – Temperatur (°C)" }
@@ -27,7 +28,7 @@
         },
         {
           "type": "RowLayout",
-          "visible": "SensorCount >= 2",
+          "visible": ["SensorCount", ">=", 2],
           "items": [
             { "type": "SelectVariable", "name": "HumiditySensor2", "caption": "Sensor 2 – Feuchte (%)" },
             { "type": "SelectVariable", "name": "TemperatureSensor2", "caption": "Sensor 2 – Temperatur (°C)" }
@@ -35,7 +36,7 @@
         },
         {
           "type": "RowLayout",
-          "visible": "SensorCount >= 3",
+          "visible": ["SensorCount", ">=", 3],
           "items": [
             { "type": "SelectVariable", "name": "HumiditySensor3", "caption": "Sensor 3 – Feuchte (%)" },
             { "type": "SelectVariable", "name": "TemperatureSensor3", "caption": "Sensor 3 – Temperatur (°C)" }
@@ -43,7 +44,7 @@
         },
         {
           "type": "RowLayout",
-          "visible": "SensorCount >= 4",
+          "visible": ["SensorCount", ">=", 4],
           "items": [
             { "type": "SelectVariable", "name": "HumiditySensor4", "caption": "Sensor 4 – Feuchte (%)" },
             { "type": "SelectVariable", "name": "TemperatureSensor4", "caption": "Sensor 4 – Temperatur (°C)" }
@@ -51,7 +52,7 @@
         },
         {
           "type": "RowLayout",
-          "visible": "SensorCount >= 5",
+          "visible": ["SensorCount", ">=", 5],
           "items": [
             { "type": "SelectVariable", "name": "HumiditySensor5", "caption": "Sensor 5 – Feuchte (%)" },
             { "type": "SelectVariable", "name": "TemperatureSensor5", "caption": "Sensor 5 – Temperatur (°C)" }
@@ -59,7 +60,7 @@
         },
         {
           "type": "RowLayout",
-          "visible": "SensorCount >= 6",
+          "visible": ["SensorCount", ">=", 6],
           "items": [
             { "type": "SelectVariable", "name": "HumiditySensor6", "caption": "Sensor 6 – Feuchte (%)" },
             { "type": "SelectVariable", "name": "TemperatureSensor6", "caption": "Sensor 6 – Temperatur (°C)" }
@@ -67,7 +68,7 @@
         },
         {
           "type": "RowLayout",
-          "visible": "SensorCount >= 7",
+          "visible": ["SensorCount", ">=", 7],
           "items": [
             { "type": "SelectVariable", "name": "HumiditySensor7", "caption": "Sensor 7 – Feuchte (%)" },
             { "type": "SelectVariable", "name": "TemperatureSensor7", "caption": "Sensor 7 – Temperatur (°C)" }
@@ -75,7 +76,7 @@
         },
         {
           "type": "RowLayout",
-          "visible": "SensorCount >= 8",
+          "visible": ["SensorCount", ">=", 8],
           "items": [
             { "type": "SelectVariable", "name": "HumiditySensor8", "caption": "Sensor 8 – Feuchte (%)" },
             { "type": "SelectVariable", "name": "TemperatureSensor8", "caption": "Sensor 8 – Temperatur (°C)" }
@@ -83,7 +84,7 @@
         },
         {
           "type": "RowLayout",
-          "visible": "SensorCount >= 9",
+          "visible": ["SensorCount", ">=", 9],
           "items": [
             { "type": "SelectVariable", "name": "HumiditySensor9", "caption": "Sensor 9 – Feuchte (%)" },
             { "type": "SelectVariable", "name": "TemperatureSensor9", "caption": "Sensor 9 – Temperatur (°C)" }
@@ -91,90 +92,11 @@
         },
         {
           "type": "RowLayout",
-          "visible": "SensorCount >= 10",
+          "visible": ["SensorCount", ">=", 10],
           "items": [
             { "type": "SelectVariable", "name": "HumiditySensor10", "caption": "Sensor 10 – Feuchte (%)" },
             { "type": "SelectVariable", "name": "TemperatureSensor10", "caption": "Sensor 10 – Temperatur (°C)" }
           ]
-        }
-      ]
-    },
-
-    {
-      "type": "ExpansionPanel",
-      "caption": "Außenluft-Abgleich (Sommer / Winter)",
-      "items": [
-        { "type": "CheckBox", "name": "UseOutsideReference", "caption": "Außenluft zur Regelung berücksichtigen" },
-        {
-          "type": "RowLayout",
-          "visible": "UseOutsideReference",
-          "items": [
-            { "type": "SelectVariable", "name": "OutsideHumidity", "caption": "Außenfeuchte (%) – Float (z. B. DPT 9.007)" },
-            { "type": "SelectVariable", "name": "OutsideTemperature", "caption": "Außentemperatur (°C) – Float (z. B. DPT 9.001)" }
-          ]
-        }
-      ]
-    },
-
-    {
-      "type": "ExpansionPanel",
-      "caption": "Regelung & Feuchtesprung",
-      "items": [
-        {
-          "type": "NumberSpinner",
-          "name": "CycleTime",
-          "caption": "Regelzyklus (Minuten)",
-          "minimum": 5,
-          "maximum": 30
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "HumidityJumpThreshold",
-          "caption": "Feuchtesprung-Schwelle (% rF)",
-          "minimum": 5,
-          "maximum": 30,
-          "digits": 1
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "HumidityJumpMinutes",
-          "caption": "Feuchtesprung-Zeitfenster (Minuten)",
-          "minimum": 1,
-          "maximum": 10
-        }
-      ]
-    },
-
-    {
-      "type": "ExpansionPanel",
-      "caption": "Nachtabschaltung",
-      "items": [
-        {
-          "type": "SelectVariable",
-          "name": "NightDisableVariable",
-          "caption": "Nachtabschaltung EIN/AUS (Boolean, lesbar – z. B. DPT 1.001)"
-        },
-        {
-          "type": "SelectVariable",
-          "name": "NightFeedbackVariable",
-          "caption": "Status Nachtabschaltung (optional, Boolean)"
-        }
-      ]
-    },
-
-    {
-      "type": "ExpansionPanel",
-      "caption": "Lüftungsansteuerung",
-      "items": [
-        {
-          "type": "SelectVariable",
-          "name": "TargetPercentVariable",
-          "caption": "Stellwert Lüftung (%) – Integer, schreibbar (SYMCON Variable)"
-        },
-        {
-          "type": "SelectVariable",
-          "name": "FeedbackPercentVariable",
-          "caption": "Rückmeldung Lüftung (%) – Integer, lesbar (optional)"
         }
       ]
     }
@@ -183,7 +105,7 @@
   "actions": [
     {
       "type": "Label",
-      "caption": "Hinweis: Alle Sensoren müssen Float-Variablen sein. Nicht konfigurierte Sensoren werden ignoriert."
+      "caption": "Hinweis: Sichtbarkeit der Sensoren richtet sich dynamisch nach der eingestellten Sensoranzahl."
     }
   ]
 }
