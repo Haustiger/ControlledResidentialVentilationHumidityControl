@@ -1,0 +1,14 @@
+{
+  "id": "{3F91A9B2-7C2E-4E18-A4E5-8B7E9A200002}",
+  "name": "ControlledResidentialVentilationHumidityControl",
+  "type": 3,
+  "vendor": "Generic",
+  "aliases": [
+    "Feuchtegeführte Wohnraumlüftung",
+    "Humidity Controlled Ventilation"
+  ],
+  "parentRequirements": [],
+  "childRequirements": [],
+  "implemented": [],
+  "prefix": "CRVHC"
+}

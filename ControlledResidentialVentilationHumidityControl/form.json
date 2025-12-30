@@ -1,0 +1,59 @@
+{
+  "elements": [
+    {
+      "type": "Label",
+      "caption": "Innensensoren (KNX DPT 9.007 Feuchte / 9.001 Temperatur, lesbar)"
+    },
+    {
+      "type": "NumberSpinner",
+      "name": "SensorCount",
+      "caption": "Anzahl Innensensoren",
+      "minimum": 1,
+      "maximum": 10
+    },
+
+    { "type": "SelectVariable", "name": "HumiditySensor1", "caption": "Feuchte Sensor 1 (DPT 9.007)" },
+    { "type": "SelectVariable", "name": "TemperatureSensor1", "caption": "Temperatur Sensor 1 (DPT 9.001)" },
+
+    { "type": "SelectVariable", "name": "HumiditySensor2", "caption": "Feuchte Sensor 2 (DPT 9.007)" },
+    { "type": "SelectVariable", "name": "TemperatureSensor2", "caption": "Temperatur Sensor 2 (DPT 9.001)" },
+
+    { "type": "SelectVariable", "name": "HumiditySensor3", "caption": "Feuchte Sensor 3 (DPT 9.007)" },
+    { "type": "SelectVariable", "name": "TemperatureSensor3", "caption": "Temperatur Sensor 3 (DPT 9.001)" },
+
+    { "type": "SelectVariable", "name": "HumiditySensor4", "caption": "Feuchte Sensor 4 (DPT 9.007)" },
+    { "type": "SelectVariable", "name": "TemperatureSensor4", "caption": "Temperatur Sensor 4 (DPT 9.001)" },
+
+    { "type": "SelectVariable", "name": "HumiditySensor5", "caption": "Feuchte Sensor 5 (DPT 9.007)" },
+    { "type": "SelectVariable", "name": "TemperatureSensor5", "caption": "Temperatur Sensor 5 (DPT 9.001)" },
+
+    { "type": "SelectVariable", "name": "HumiditySensor6", "caption": "Feuchte Sensor 6 (DPT 9.007)" },
+    { "type": "SelectVariable", "name": "TemperatureSensor6", "caption": "Temperatur Sensor 6 (DPT 9.001)" },
+
+    { "type": "SelectVariable", "name": "HumiditySensor7", "caption": "Feuchte Sensor 7 (DPT 9.007)" },
+    { "type": "SelectVariable", "name": "TemperatureSensor7", "caption": "Temperatur Sensor 7 (DPT 9.001)" },
+
+    { "type": "SelectVariable", "name": "HumiditySensor8", "caption": "Feuchte Sensor 8 (DPT 9.007)" },
+    { "type": "SelectVariable", "name": "TemperatureSensor8", "caption": "Temperatur Sensor 8 (DPT 9.001)" },
+
+    { "type": "SelectVariable", "name": "HumiditySensor9", "caption": "Feuchte Sensor 9 (DPT 9.007)" },
+    { "type": "SelectVariable", "name": "TemperatureSensor9", "caption": "Temperatur Sensor 9 (DPT 9.001)" },
+
+    { "type": "SelectVariable", "name": "HumiditySensor10", "caption": "Feuchte Sensor 10 (DPT 9.007)" },
+    { "type": "SelectVariable", "name": "TemperatureSensor10", "caption": "Temperatur Sensor 10 (DPT 9.001)" },
+
+    {
+      "type": "Label",
+      "caption": "Außenluft (optional)"
+    },
+    { "type": "SelectVariable", "name": "OutsideHumidity", "caption": "Außenfeuchte (DPT 9.007)" },
+    { "type": "SelectVariable", "name": "OutsideTemperature", "caption": "Außentemperatur (DPT 9.001)" },
+
+    {
+      "type": "Label",
+      "caption": "KNX Ansteuerung"
+    },
+    { "type": "SelectVariable", "name": "TargetPercentVariable", "caption": "Stellwert % (DPT 5.001, schreibbar)" },
+    { "type": "SelectVariable", "name": "FeedbackPercentVariable", "caption": "Rückmeldung % (DPT 5.001, lesbar)" }
+  ]
+}
