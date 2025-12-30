@@ -7,8 +7,5 @@
     "Feuchtegeführte Wohnraumlüftung",
     "Humidity Controlled Ventilation"
   ],
-  "parentRequirements": [],
-  "childRequirements": [],
-  "implemented": [],
   "prefix": "CRVHC"
 }

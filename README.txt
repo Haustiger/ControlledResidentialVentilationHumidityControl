@@ -3,57 +3,80 @@ Controlled Residential Ventilation – Humidity Control
 
 1. Zweck
 --------
-Dieses IP-SYMCON Modul steuert eine kontrollierte Wohnraumlüftung
+Dieses Modul steuert eine kontrollierte Wohnraumlüftung
 feuchtegeführt auf Basis der absoluten Feuchte (g/m³).
 
-2. Absolute Feuchte
--------------------
-g/m³ beschreibt die tatsächliche Menge an Wasserdampf pro Kubikmeter Luft
-und ist unabhängig von der Temperatur. Dadurch ist eine korrekte
-Sommer-/Winterregelung möglich.
+2. Warum absolute Feuchte?
+--------------------------
+Relative Feuchte ist temperaturabhängig.
+Absolute Feuchte (g/m³) erlaubt:
+- korrekte Sommer-/Winterregelung
+- Vergleich von Innen- und Außenluft
+- stabile Regelung ohne Fehlinterpretationen
 
 3. Sensorik
 -----------
-- Bis zu 10 Innensensoren (KNX DPT 9.007 Feuchte, 9.001 Temperatur)
-- Optionaler Außensensor
-- Es wird immer der Sensor mit der höchsten absoluten Feuchte verwendet
+- Bis zu 10 Innensensoren
+- Jeder Sensor besteht aus:
+  - Temperatur (Float, °C)
+  - Feuchte (Float, 0–100 %)
+- Es wird IMMER der Sensor mit der höchsten absoluten Feuchte verwendet
 
-4. Feuchtesprung-Erkennung
---------------------------
-Ein Feuchtesprung liegt vor, wenn:
-- die relative Feuchte um mindestens den konfigurierten Wert steigt
-- innerhalb eines Regelzyklus (≤ 30 Minuten)
+4. Feuchtesprung
+----------------
+Ein Feuchtesprung wird erkannt, wenn:
+- Δ rF ≥ konfigurierter Wert
+- innerhalb des definierten Zeitfensters
 
 Reaktion:
-- Erhöhung der aktuellen Lüftungsstufe um +3
-- unabhängig von Sommer-/Winterbetrieb
+- +3 Lüftungsstufen
+- unabhängig von Sommer/Winter
+- nachts ggf. temporäre Übersteuerung
 
 5. Nachtabschaltung
 -------------------
-Die Lüftung kann nachts über eine KNX-Variable (DPT 1.001) deaktiviert werden.
-Zeitfenster frei konfigurierbar.
+- Aktivierung über Boolean-Variable
+- Zeitfenster frei definierbar
+- Lüftung wird vollständig deaktiviert
 
-6. Nachtübersteuerung bei Feuchtesprung
----------------------------------------
-Wird während der Nachtabschaltung ein Feuchtesprung erkannt:
-- wird die Lüftung für maximal 60 Minuten aktiviert
-- Statusanzeige: "Nachtübersteuerung aktiv"
-- Ampel: 🔵
+6. Nachtübersteuerung
+---------------------
+- Bei Feuchtesprung während Nachtabschaltung
+- Lüftung wird für max. X Minuten aktiviert
+- Visualisierung über Variable "Nachtübersteuerung aktiv"
 
-7. Statusanzeigen
+7. Stellwert-Ausgabe
+--------------------
+- Ausgabe erfolgt in Prozent (0–100)
+- Empfohlenes Profil: ~Intensity.100
+- Die Variable MUSS schreibbar sein
+
+8. Rückmeldung
+--------------
+- Optional
+- Wird zur Plausibilitätsprüfung genutzt
+- Verzögerung bis 30 Sekunden zulässig
+
+9. Status & Ampel
 -----------------
 ⚫ Nachtabschaltung
 🟢 Lüftung aktiv
 🟡 Außenluft ungünstig
 🔴 Fehler
-🔵 Nachtübersteuerung durch Feuchtesprung
+🔵 Nachtübersteuerung
 
-8. KNX Hinweise
+10. Validierung
 ---------------
-- Stellwert: DPT 5.001 (Scaling), schreibbar
-- Rückmeldung: DPT 5.001, lesbar
+Beim Speichern der Konfiguration wird geprüft:
+- Existenz aller Variablen
+- Variablentyp (Boolean / Integer / Float)
+- Lesbarkeit / Schreibbarkeit
+- Profilprüfung für Prozentwerte
 
-9. Rechtlicher Hinweis
----------------------
-Dieses Modul ist herstellerneutral und nicht an einen
-bestimmten Lüftungsgerätehersteller gebunden.
+Fehler → Modulstatus rot  
+Warnung → Modulstatus gelb  
+
+11. Universelle Nutzung
+-----------------------
+Das Modul ist hersteller- und protokollunabhängig.
+KNX, MQTT, ModBus etc. sind NICHT erforderlich.

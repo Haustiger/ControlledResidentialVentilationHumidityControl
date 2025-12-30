@@ -2,72 +2,157 @@
 
 class ControlledResidentialVentilationHumidityControl extends IPSModule
 {
+    /* ===================== Lüftungsstufen ===================== */
     private array $stageMap = [
         1 => 12, 2 => 24, 3 => 36, 4 => 48,
         5 => 60, 6 => 72, 7 => 84, 8 => 96
     ];
 
+    /* ===================== CREATE ===================== */
     public function Create()
     {
         parent::Create();
 
-        // ================= Eigenschaften =================
-        $this->RegisterPropertyInteger("CycleTime", 10);            // 5–30 Minuten
-        $this->RegisterPropertyFloat("HumidityJump", 10.0);        // % rF
-        $this->RegisterPropertyInteger("MaxNightOverride", 60);    // Minuten
+        /* ===== Regelparameter ===== */
+        $this->RegisterPropertyInteger("CycleTime", 10);
+        $this->RegisterPropertyFloat("HumidityJump", 10.0);
+        $this->RegisterPropertyInteger("HumidityJumpTime", 10);
 
+        /* ===== Sensoren ===== */
         $this->RegisterPropertyInteger("SensorCount", 1);
         for ($i = 1; $i <= 10; $i++) {
             $this->RegisterPropertyInteger("HumiditySensor" . $i, 0);
             $this->RegisterPropertyInteger("TemperatureSensor" . $i, 0);
         }
 
-        $this->RegisterPropertyBoolean("UseOutsideReference", true);
+        /* ===== Außenreferenz ===== */
+        $this->RegisterPropertyBoolean("UseOutsideReference", false);
         $this->RegisterPropertyInteger("OutsideHumidity", 0);
         $this->RegisterPropertyInteger("OutsideTemperature", 0);
         $this->RegisterPropertyFloat("AbsoluteDelta", 1.0);
 
-        // Nachtabschaltung
-        $this->RegisterPropertyInteger("NightDisableVariable", 0); // DPT 1.001
+        /* ===== Nachtabschaltung ===== */
+        $this->RegisterPropertyInteger("NightDisableVariable", 0);
         $this->RegisterPropertyString("NightStart", "22:00");
         $this->RegisterPropertyString("NightEnd", "06:00");
+        $this->RegisterPropertyInteger("MaxNightOverride", 60);
 
-        // KNX
-        $this->RegisterPropertyInteger("TargetPercentVariable", 0);   // DPT 5.001
-        $this->RegisterPropertyInteger("FeedbackPercentVariable", 0); // DPT 5.001
+        /* ===== Ausgänge ===== */
+        $this->RegisterPropertyInteger("TargetPercentVariable", 0);
+        $this->RegisterPropertyInteger("FeedbackPercentVariable", 0);
 
-        // ================= Statusvariablen =================
-        $this->RegisterVariableInteger("OperationState", "Status Lüftung", "~Alert", 1);
-        $this->RegisterVariableString("OperationText", "Status Text", "", 2);
-        $this->RegisterVariableFloat("AbsHumidityInside", "Absolute Feuchte innen (g/m³)", "", 3);
-        $this->RegisterVariableFloat("AbsHumidityOutside", "Absolute Feuchte außen (g/m³)", "", 4);
-        $this->RegisterVariableInteger("CurrentStage", "Lüftungsstufe", "", 5);
-        $this->RegisterVariableInteger("CurrentPercent", "Stellwert (%)", "~Intensity.100", 6);
-        $this->RegisterVariableString("TrafficLight", "Lüftungsampel", "", 7);
-        $this->RegisterVariableBoolean("NightOverrideActive", "Nachtübersteuerung aktiv", "", 8);
+        /* ===== Statusvariablen ===== */
+        $this->RegisterVariableInteger("OperationState", "Status Lüftung", "~Status");
+        $this->RegisterVariableString("OperationText", "Status Text");
+        $this->RegisterVariableString("TrafficLight", "Lüftungsampel");
+        $this->RegisterVariableBoolean("NightOverrideActive", "Nachtübersteuerung aktiv");
 
-        // ================= Timer =================
+        $this->RegisterVariableFloat("AbsHumidityInside", "Absolute Feuchte innen (g/m³)");
+        $this->RegisterVariableFloat("AbsHumidityOutside", "Absolute Feuchte außen (g/m³)");
+        $this->RegisterVariableInteger("CurrentStage", "Lüftungsstufe");
+        $this->RegisterVariableInteger("CurrentPercent", "Stellwert (%)", "~Intensity.100");
+
+        /* ===== Timer ===== */
         $this->RegisterTimer("UpdateTimer", 0, "CRVHC_Update(\$_IPS['TARGET']);");
 
-        // ================= Buffer =================
+        /* ===== Buffer ===== */
         $this->SetBuffer("LastMaxRH", "");
         $this->SetBuffer("LastRHTime", "");
         $this->SetBuffer("NightOverrideUntil", "");
     }
 
+    /* ===================== APPLY CHANGES ===================== */
     public function ApplyChanges()
     {
         parent::ApplyChanges();
+
         $cycle = min(30, max(5, $this->ReadPropertyInteger("CycleTime")));
         $this->SetTimerInterval("UpdateTimer", $cycle * 60000);
+
+        $errors = [];
+        $warnings = [];
+
+        /* ===== Sensorvalidierung ===== */
+        for ($i = 1; $i <= $this->ReadPropertyInteger("SensorCount"); $i++) {
+            $h = $this->ReadPropertyInteger("HumiditySensor" . $i);
+            $t = $this->ReadPropertyInteger("TemperatureSensor" . $i);
+
+            if ($h == 0 || $t == 0) {
+                $warnings[] = "Sensor $i ist nicht vollständig konfiguriert.";
+                continue;
+            }
+
+            $this->ValidateVariable($h, VARIABLETYPE_FLOAT, true, false, "Feuchte Sensor $i", $errors);
+            $this->ValidateVariable($t, VARIABLETYPE_FLOAT, true, false, "Temperatur Sensor $i", $errors);
+        }
+
+        /* ===== Außenluft ===== */
+        if ($this->ReadPropertyBoolean("UseOutsideReference")) {
+            $this->ValidateVariable(
+                $this->ReadPropertyInteger("OutsideHumidity"),
+                VARIABLETYPE_FLOAT,
+                true,
+                false,
+                "Außenfeuchte",
+                $errors
+            );
+            $this->ValidateVariable(
+                $this->ReadPropertyInteger("OutsideTemperature"),
+                VARIABLETYPE_FLOAT,
+                true,
+                false,
+                "Außentemperatur",
+                $errors
+            );
+        }
+
+        /* ===== Nachtabschaltung ===== */
+        if ($this->ReadPropertyInteger("NightDisableVariable") > 0) {
+            $this->ValidateVariable(
+                $this->ReadPropertyInteger("NightDisableVariable"),
+                VARIABLETYPE_BOOLEAN,
+                true,
+                false,
+                "Nachtabschaltung",
+                $errors
+            );
+        }
+
+        /* ===== Stellwert ===== */
+        $out = $this->ReadPropertyInteger("TargetPercentVariable");
+        if ($out == 0) {
+            $errors[] = "Keine Stellwert-Ausgabevariable definiert.";
+        } else {
+            $this->ValidateVariable($out, VARIABLETYPE_INTEGER, true, true, "Stellwert-Ausgabe", $errors);
+            $this->ValidatePercentProfile($out, "Stellwert-Ausgabe", $warnings);
+        }
+
+        /* ===== Status ===== */
+        if (!empty($errors)) {
+            foreach ($errors as $e) {
+                $this->LogMessage($e, KL_ERROR);
+            }
+            $this->SetStatus(201);
+            return;
+        }
+
+        if (!empty($warnings)) {
+            foreach ($warnings as $w) {
+                $this->LogMessage($w, KL_WARNING);
+            }
+            $this->SetStatus(200);
+            return;
+        }
+
+        $this->SetStatus(102);
     }
 
-    // ================= Hauptlogik =================
+    /* ===================== UPDATE ===================== */
     public function Update()
     {
         $now = time();
 
-        // Nachtübersteuerung aktiv?
+        /* ===== Nachtabschaltung ===== */
         $overrideUntil = intval($this->GetBuffer("NightOverrideUntil"));
         $nightOverride = ($overrideUntil > $now);
         $this->SetValue("NightOverrideActive", $nightOverride);
@@ -77,78 +162,72 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
             return;
         }
 
+        /* ===== Sensoren auswerten ===== */
         $maxAbs = 0.0;
-        $maxRH  = 0.0;
+        $maxRH = 0.0;
 
         for ($i = 1; $i <= $this->ReadPropertyInteger("SensorCount"); $i++) {
             $h = $this->ReadPropertyInteger("HumiditySensor" . $i);
             $t = $this->ReadPropertyInteger("TemperatureSensor" . $i);
 
             if ($h > 0 && $t > 0 && IPS_VariableExists($h) && IPS_VariableExists($t)) {
-                $rh  = GetValue($h);
+                $rh = GetValue($h);
                 $abs = $this->CalcAbs(GetValue($t), $rh);
 
                 if ($abs > $maxAbs) {
                     $maxAbs = $abs;
-                    $maxRH  = $rh;
+                    $maxRH = $rh;
                 }
             }
         }
 
         $this->SetValue("AbsHumidityInside", $maxAbs);
 
-        // ===== Feuchtesprung mit Zeitfenster =====
-        $lastRH     = floatval($this->GetBuffer("LastMaxRH"));
-        $lastRHTime = intval($this->GetBuffer("LastRHTime"));
+        /* ===== Feuchtesprung ===== */
+        $lastRH = floatval($this->GetBuffer("LastMaxRH"));
+        $lastTime = intval($this->GetBuffer("LastRHTime"));
 
         if ($lastRH > 0 &&
             ($maxRH - $lastRH) >= $this->ReadPropertyFloat("HumidityJump") &&
-            ($now - $lastRHTime) <= ($this->ReadPropertyInteger("CycleTime") * 60)) {
+            ($now - $lastTime) <= ($this->ReadPropertyInteger("HumidityJumpTime") * 60)) {
 
-            // Nachtübersteuerung aktivieren
             if ($this->IsNightDisabled()) {
                 $this->SetBuffer(
                     "NightOverrideUntil",
                     (string)($now + $this->ReadPropertyInteger("MaxNightOverride") * 60)
                 );
-                $this->SetValue("NightOverrideActive", true);
                 $this->SetState(2, "Feuchtesprung – Nachtübersteuerung", "🔵");
             } else {
                 $this->SetState(2, "Feuchtesprung erkannt", "🔴");
             }
 
-            $newStage = min(8, $this->GetValue("CurrentStage") + 3);
-            $this->ApplyStage($newStage);
-
-            $this->SetBuffer("LastMaxRH", (string)$maxRH);
-            $this->SetBuffer("LastRHTime", (string)$now);
-            return;
+            $this->ApplyStage(min(8, $this->GetValue("CurrentStage") + 3));
         }
 
         $this->SetBuffer("LastMaxRH", (string)$maxRH);
         $this->SetBuffer("LastRHTime", (string)$now);
 
-        // ===== Außenreferenz =====
+        /* ===== Außenvergleich ===== */
         if ($this->ReadPropertyBoolean("UseOutsideReference")) {
-            $oh = $this->ReadPropertyInteger("OutsideHumidity");
-            $ot = $this->ReadPropertyInteger("OutsideTemperature");
+            $absOut = $this->CalcAbs(
+                GetValue($this->ReadPropertyInteger("OutsideTemperature")),
+                GetValue($this->ReadPropertyInteger("OutsideHumidity"))
+            );
+            $this->SetValue("AbsHumidityOutside", $absOut);
 
-            if ($oh > 0 && $ot > 0 && IPS_VariableExists($oh) && IPS_VariableExists($ot)) {
-                $absOut = $this->CalcAbs(GetValue($ot), GetValue($oh));
-                $this->SetValue("AbsHumidityOutside", $absOut);
-
-                if ($maxAbs <= ($absOut + $this->ReadPropertyFloat("AbsoluteDelta"))) {
-                    $this->SetState(1, "Außenluft ungünstig", "🟡");
-                    return;
-                }
+            if ($maxAbs <= ($absOut + $this->ReadPropertyFloat("AbsoluteDelta"))) {
+                $this->SetState(1, "Außenluft ungünstig", "🟡");
+                return;
             }
         }
 
-        // ===== Normale Regelung =====
+        /* ===== Normale Regelung ===== */
         $stage = min(8, max(1, intval(($maxAbs - 6) * 1.3)));
         $this->ApplyStage($stage);
         $this->SetState(2, "Lüftung aktiv", "🟢");
     }
+
+    /* ===================== HILFSFUNKTIONEN ===================== */
 
     private function CalcAbs(float $t, float $rh): float
     {
@@ -175,9 +254,9 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
             return false;
         }
 
-        $now   = strtotime(date("H:i"));
+        $now = strtotime(date("H:i"));
         $start = strtotime($this->ReadPropertyString("NightStart"));
-        $end   = strtotime($this->ReadPropertyString("NightEnd"));
+        $end = strtotime($this->ReadPropertyString("NightEnd"));
 
         return ($start < $end)
             ? ($now >= $start && $now <= $end)
@@ -189,5 +268,37 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
         $this->SetValue("OperationState", $state);
         $this->SetValue("OperationText", $text);
         $this->SetValue("TrafficLight", $icon);
+    }
+
+    private function ValidateVariable(
+        int $varId,
+        int $expectedType,
+        bool $mustReadable,
+        bool $mustWritable,
+        string $name,
+        array &$messages
+    ) {
+        if ($varId == 0 || !IPS_VariableExists($varId)) {
+            $messages[] = "$name: Variable existiert nicht.";
+            return;
+        }
+
+        $var = IPS_GetVariable($varId);
+
+        if ($var['VariableType'] !== $expectedType) {
+            $messages[] = "$name: Falscher Variablentyp.";
+        }
+
+        if ($mustWritable && $var['VariableAction'] == 0) {
+            $messages[] = "$name: Variable ist nicht schreibbar.";
+        }
+    }
+
+    private function ValidatePercentProfile(int $varId, string $name, array &$warnings)
+    {
+        $var = IPS_GetVariable($varId);
+        if ($var['VariableProfile'] !== "~Intensity.100") {
+            $warnings[] = "$name: Empfohlenes Profil ~Intensity.100 fehlt.";
+        }
     }
 }
