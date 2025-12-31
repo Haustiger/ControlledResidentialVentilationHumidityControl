@@ -1,41 +1,29 @@
 Controlled Residential Ventilation – Feuchtebasierte Regelung
-=============================================================
+Version 3.0 (Build 8)
+============================================================
 
-1. Ziel
--------
+ZIEL
+----
 Dieses IP-SYMCON-Modul steuert eine kontrollierte Wohnraumlüftung
 auf Basis der ABSOLUTEN Feuchte (g/m³).
 
-Es werden bis zu 10 Innensensoren unterstützt.
-Immer der höchste Feuchtewert bestimmt die Lüftungsstufe.
+Bis zu 10 Innensensoren werden unterstützt.
+Immer der höchste Feuchtewert bestimmt die Lüftungsleistung.
 
-2. Unterstützte Eingänge
-------------------------
-Innensensoren:
-- Relative Feuchte (% rF) – Float – lesbar
-- Temperatur (°C) – Float – lesbar
-
-Außenluft (optional):
-- Relative Feuchte (% rF) – Float – lesbar
-- Temperatur (°C) – Float – lesbar
-
-3. Warum absolute Feuchte?
---------------------------
+WARUM ABSOLUTE FEUCHTE?
+-----------------------
 Relative Feuchte ist temperaturabhängig.
-Absolute Feuchte (g/m³) beschreibt die tatsächliche Wassermenge
-in der Luft und ist ideal zur Lüftungsregelung.
+Absolute Feuchte beschreibt die tatsächliche Wassermenge
+in der Luft und ist physikalisch korrekt für Lüftungsregelungen.
 
-Formel:
-  abs = 216.7 * (rF/100 * Dampfdruck) / (273.15 + Temperatur)
+FORMEL
+-------
+Absolute Feuchte (g/m³):
+  AH = 216.7 * (rF/100 * Dampfdruck) / (273.15 + Temperatur)
 
-4. Regelzyklus
+LÜFTUNGSSTUFEN
 --------------
-Einstellbar: 5–30 Minuten
-Der Stellwert wird zyklisch neu berechnet.
-
-5. Lüftungsstufen
------------------
-Die Anlage wird ausschließlich in Prozent angesteuert:
+Die Lüftung wird ausschließlich in Prozent angesteuert:
 
 Stufe 1 → 12 %
 Stufe 2 → 24 %
@@ -46,34 +34,33 @@ Stufe 6 → 72 %
 Stufe 7 → 84 %
 Stufe 8 → 96 %
 
-6. Nachtabschaltung
--------------------
-Über eine externe Boolean-Variable.
-Ist sie TRUE, wird die Lüftung deaktiviert.
-Status wird blau visualisiert.
-
-7. Statusanzeige (Ampel)
-------------------------
-0 = Aus (grau)
-1 = Betrieb (grün)
-4 = Fehler (rot)
-5 = Nachtabschaltung (blau)
-
-8. Typische Fehler
-------------------
-- Variable nicht lesbar → wird ignoriert
-- Keine gültigen Sensoren → Status FEHLER
-- Ausgabevariable nicht schreibbar → keine Ansteuerung
-
-9. Erweiterungen (zukünftig)
-----------------------------
-- Selbstlernende Regelung
-- Erfolgskontrolle Lüftung
-- Automatische Sommer-/Winteranpassung
-- Taupunkt-basierte Optimierung
-
-10. Hinweis
+REGELZYKLUS
 -----------
-Das Modul ist universell einsetzbar.
-KNX ist NICHT erforderlich – jede SYMCON-Variable ist geeignet,
-wenn Typ und Zugriffsrechte stimmen.
+Frei einstellbar: 5–30 Minuten
+
+NACHTABSCHALTUNG
+----------------
+Über eine externe Boolean-Variable.
+Bei Aktivierung wird die Lüftung deaktiviert
+(Statusanzeige blau).
+
+STATUSAMPEL
+-----------
+Aus            → Grau
+Betrieb        → Grün
+Fehler         → Rot
+Nachtbetrieb   → Blau
+
+KOMPATIBILITÄT
+--------------
+• KNX optional
+• Keine Herstellerbindung
+• Jede SYMCON-Variable nutzbar
+• Vollständig updatefähig
+
+ZUKÜNFTIGE ERWEITERUNGEN
+-----------------------
+• Selbstlernende Regelung
+• Erfolgskontrolle Lüften
+• Automatische Sommer-/Winterlogik
+• Taupunktbasierte Optimierung

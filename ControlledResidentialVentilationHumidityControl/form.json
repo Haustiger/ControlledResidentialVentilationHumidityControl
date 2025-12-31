@@ -17,7 +17,7 @@
 
         {
           "type": "Label",
-          "caption": "Je Sensor:\n• Feuchte (% rF, Float, lesbar)\n• Temperatur (°C, Float, lesbar)\nNicht konfigurierte Sensoren werden ignoriert."
+          "caption": "Je Sensor werden zwei Float-Variablen benötigt:\n• Relative Feuchte (% rF, lesbar)\n• Temperatur (°C, lesbar)\nNicht konfigurierte Sensoren werden ignoriert."
         },
 
         {
@@ -105,7 +105,7 @@
 
     {
       "type": "ExpansionPanel",
-      "caption": "Außenluft",
+      "caption": "Außenluft (Sommer-/Winterabgleich)",
       "items": [
         {
           "type": "CheckBox",
@@ -126,7 +126,7 @@
 
     {
       "type": "ExpansionPanel",
-      "caption": "Regelung",
+      "caption": "Regelparameter",
       "items": [
         {
           "type": "NumberSpinner",

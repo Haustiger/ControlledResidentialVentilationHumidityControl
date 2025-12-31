@@ -21,11 +21,10 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
         $this->RegisterPropertyInteger('HumidityJumpMinutes', 5);
 
         $this->RegisterPropertyInteger('NightDisableVariable', 0);
-
         $this->RegisterPropertyInteger('TargetPercentVariable', 0);
         $this->RegisterPropertyInteger('FeedbackPercentVariable', 0);
 
-        $this->RegisterTimer('ControlTimer', 0, 'CRV_Control($_IPS[\'TARGET\']);');
+        $this->RegisterTimer('ControlTimer', 0, 'CRV_Control($_IPS["TARGET"]);');
 
         $this->CreateStatusProfile();
 
@@ -36,10 +35,7 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-
-        $cycle = $this->ReadPropertyInteger('CycleTime');
-        $this->SetTimerInterval('ControlTimer', $cycle * 60 * 1000);
-
+        $this->SetTimerInterval('ControlTimer', $this->ReadPropertyInteger('CycleTime') * 60000);
         $this->SetStatus(102);
     }
 
@@ -56,13 +52,13 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
             return;
         }
 
-        $maxAbsHumidity = 0.0;
+        $maxAbs = 0.0;
         foreach ($sensors as $s) {
             $abs = $this->CalculateAbsoluteHumidity($s['temperature'], $s['humidity']);
-            $maxAbsHumidity = max($maxAbsHumidity, $abs);
+            $maxAbs = max($maxAbs, $abs);
         }
 
-        $percent = min(96, max(12, round($maxAbsHumidity * 10)));
+        $percent = min(96, max(12, round($maxAbs * 10)));
         $this->WriteOutput($percent);
 
         SetValue($this->GetIDForIdent('CurrentPercent'), $percent);
@@ -115,7 +111,7 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
             IPS_SetVariableProfileAssociation('~CRV.Status', 0, 'Aus', '', 0x808080);
             IPS_SetVariableProfileAssociation('~CRV.Status', 1, 'Betrieb', '', 0x00FF00);
             IPS_SetVariableProfileAssociation('~CRV.Status', 4, 'Fehler', '', 0xFF0000);
-            IPS_SetVariableProfileAssociation('~CRV.Status', 5, 'Nacht', '', 0x0000FF);
+            IPS_SetVariableProfileAssociation('~CRV.Status', 5, 'Nachtabschaltung', '', 0x0000FF);
         }
     }
 }
