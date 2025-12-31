@@ -1,9 +1,9 @@
 {
-  "id": "{8C9E4F01-5E2C-4E5E-9D8A-7A2E7A100001}",
-  "author": "Controlled Residential Ventilation",
-  "name": "Controlled Residential Ventilation – Humidity Control",
+  "id": "{A9C6F9C3-3A4B-4E4A-9C4A-9E4A0A8E1001}",
+  "name": "Controlled Residential Ventilation",
+  "author": "Community",
   "url": "",
   "version": "3.0",
-  "build": 6,
+  "build": 7,
   "date": 0
 }
