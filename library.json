@@ -1,9 +1,9 @@
 {
-  "id": "{A9C6F9C3-3A4B-4E4A-9C4A-9E4A0A8E1001}",
-  "name": "Controlled Residential Ventilation Modules",
-  "author": "Community",
+  "id": "{9F7C7B41-7F3C-4F52-9A9E-CRVHC0000001}",
+  "name": "Controlled Residential Ventilation",
+  "author": "Custom",
   "url": "",
   "version": "3.0",
-  "build": 8,
+  "build": 10,
   "date": 0
 }

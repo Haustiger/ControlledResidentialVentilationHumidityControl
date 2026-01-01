@@ -1,13 +1,11 @@
 {
-  "id": "{B7F0C4A2-6B44-4C2F-8F0C-6E3F1E9E2002}",
+  "id": "{A1C0E5F0-8D1F-4E2B-9C8B-CRVHC0000002}",
   "name": "ControlledResidentialVentilationHumidityControl",
   "type": 3,
-  "vendor": "Community",
-  "aliases": [
-    "CRV Humidity Control"
-  ],
+  "vendor": "Custom",
+  "aliases": ["CRV Humidity Control"],
   "parentRequirements": [],
   "childRequirements": [],
   "implemented": [],
-  "prefix": "CRV"
+  "prefix": "CRVHC"
 }
