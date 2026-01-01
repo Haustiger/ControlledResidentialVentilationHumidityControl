@@ -10,7 +10,7 @@
 
         {
             "type": "ExpansionPanel",
-            "caption": "Innensensoren (Feuchte % rF / Temperatur °C)",
+            "caption": "Innensensoren",
             "items": [
                 { "type": "SelectVariable", "name": "HumiditySensor1", "caption": "Feuchte Sensor 1 (% rF)" },
                 { "type": "SelectVariable", "name": "TemperatureSensor1", "caption": "Temperatur Sensor 1 (°C)" },
@@ -55,7 +55,6 @@
                     "minimum": 5,
                     "maximum": 30
                 },
-
                 {
                     "type": "NumberSpinner",
                     "name": "HumidityJumpThreshold",
@@ -75,15 +74,35 @@
                     "name": "NightDisableInput",
                     "caption": "Nachtabschaltung EIN/AUS (BOOL, optional)"
                 },
+
                 {
-                    "type": "TimeSpinner",
-                    "name": "NightOffTime",
-                    "caption": "Nachtabschaltung EIN ab"
+                    "type": "NumberSpinner",
+                    "name": "NightOffHour",
+                    "caption": "Nachtabschaltung EIN – Stunde",
+                    "minimum": 0,
+                    "maximum": 23
                 },
                 {
-                    "type": "TimeSpinner",
-                    "name": "NightOnTime",
-                    "caption": "Nachtabschaltung AUS ab"
+                    "type": "NumberSpinner",
+                    "name": "NightOffMinute",
+                    "caption": "Nachtabschaltung EIN – Minute",
+                    "minimum": 0,
+                    "maximum": 59
+                },
+
+                {
+                    "type": "NumberSpinner",
+                    "name": "NightOnHour",
+                    "caption": "Nachtabschaltung AUS – Stunde",
+                    "minimum": 0,
+                    "maximum": 23
+                },
+                {
+                    "type": "NumberSpinner",
+                    "name": "NightOnMinute",
+                    "caption": "Nachtabschaltung AUS – Minute",
+                    "minimum": 0,
+                    "maximum": 59
                 }
             ]
         },
