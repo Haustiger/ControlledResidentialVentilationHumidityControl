@@ -26,38 +26,14 @@
           "maximum": 10
         },
 
-        {
-          "type": "SelectVariable",
-          "name": "IndoorHumidity_1",
-          "caption": "Innen Feuchte Sensor 1 (rF %)"
-        },
-        {
-          "type": "SelectVariable",
-          "name": "IndoorTemperature_1",
-          "caption": "Innen Temperatur Sensor 1 (°C)"
-        },
+        { "type": "SelectVariable", "name": "IndoorHumidity_1", "caption": "Innen Feuchte 1 (rF %)" },
+        { "type": "SelectVariable", "name": "IndoorTemperature_1", "caption": "Innen Temperatur 1 (°C)" },
 
-        {
-          "type": "SelectVariable",
-          "name": "IndoorHumidity_2",
-          "caption": "Innen Feuchte Sensor 2 (rF %)"
-        },
-        {
-          "type": "SelectVariable",
-          "name": "IndoorTemperature_2",
-          "caption": "Innen Temperatur Sensor 2 (°C)"
-        },
+        { "type": "SelectVariable", "name": "IndoorHumidity_2", "caption": "Innen Feuchte 2 (rF %)" },
+        { "type": "SelectVariable", "name": "IndoorTemperature_2", "caption": "Innen Temperatur 2 (°C)" },
 
-        {
-          "type": "SelectVariable",
-          "name": "IndoorHumidity_3",
-          "caption": "Innen Feuchte Sensor 3 (rF %)"
-        },
-        {
-          "type": "SelectVariable",
-          "name": "IndoorTemperature_3",
-          "caption": "Innen Temperatur Sensor 3 (°C)"
-        }
+        { "type": "SelectVariable", "name": "IndoorHumidity_3", "caption": "Innen Feuchte 3 (rF %)" },
+        { "type": "SelectVariable", "name": "IndoorTemperature_3", "caption": "Innen Temperatur 3 (°C)" }
       ]
     },
 
@@ -65,20 +41,12 @@
       "type": "ExpansionPanel",
       "caption": "Außensensoren (Sommer / Winter)",
       "items": [
-        {
-          "type": "SelectVariable",
-          "name": "OutdoorHumidity",
-          "caption": "Außen Feuchte (rF %)"
-        },
-        {
-          "type": "SelectVariable",
-          "name": "OutdoorTemperature",
-          "caption": "Außen Temperatur (°C)"
-        },
+        { "type": "SelectVariable", "name": "OutdoorHumidity", "caption": "Außen Feuchte (rF %)" },
+        { "type": "SelectVariable", "name": "OutdoorTemperature", "caption": "Außen Temperatur (°C)" },
         {
           "type": "NumberSpinner",
           "name": "OutsideDeltaThreshold",
-          "caption": "Mindest-Differenz absolute Feuchte (g/m³)",
+          "caption": "Mindestdifferenz absolute Feuchte (g/m³)",
           "minimum": 0.5,
           "maximum": 10,
           "digits": 1
@@ -88,29 +56,15 @@
 
     {
       "type": "ExpansionPanel",
-      "caption": "Feuchtesprung-Erkennung",
+      "caption": "Feuchtesprung",
       "items": [
         {
           "type": "NumberSpinner",
           "name": "HumidityJumpThreshold",
-          "caption": "Feuchtesprung Schwelle (g/m³)",
+          "caption": "Schwelle Feuchtesprung (g/m³)",
           "minimum": 0.5,
           "maximum": 10,
           "digits": 1
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "HumidityJumpMinutes",
-          "caption": "Zeitfenster (Minuten)",
-          "minimum": 1,
-          "maximum": 10
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "HumidityJumpMaxRuntime",
-          "caption": "Max. Laufzeit Override (Minuten)",
-          "minimum": 10,
-          "maximum": 120
         }
       ]
     },
@@ -119,11 +73,7 @@
       "type": "ExpansionPanel",
       "caption": "Nachtabschaltung",
       "items": [
-        {
-          "type": "SelectVariable",
-          "name": "NightOffSwitch",
-          "caption": "Nachtabschaltung aktiv (Bool)"
-        }
+        { "type": "SelectVariable", "name": "NightOffSwitch", "caption": "Nachtabschaltung aktiv (Bool)" }
       ]
     },
 
@@ -131,16 +81,7 @@
       "type": "ExpansionPanel",
       "caption": "Lüftungssteuerung",
       "items": [
-        {
-          "type": "SelectVariable",
-          "name": "VentilationSetpointID",
-          "caption": "Lüftungs-Stellwert (%)"
-        },
-        {
-          "type": "SelectVariable",
-          "name": "VentilationFeedbackID",
-          "caption": "Rückmeldung Lüftung (%)"
-        }
+        { "type": "SelectVariable", "name": "VentilationSetpointID", "caption": "Lüftungsstellwert (%)" }
       ]
     }
   ],
@@ -149,7 +90,7 @@
     {
       "type": "Button",
       "caption": "Regelung jetzt ausführen",
-      "onClick": "CRV_Run($id);"
+      "onClick": "IPS_RequestAction($id, \"ManualRun\", 1);"
     }
   ]
 }
