@@ -4,46 +4,55 @@ declare(strict_types=1);
 
 class ControlledResidentialVentilationHumidityControl extends IPSModule
 {
+    /* ==========================================================
+     * CREATE
+     * ========================================================== */
     public function Create()
     {
         parent::Create();
 
-        // =========================
-        // Grundeinstellungen
-        // =========================
+        /* --------------------------
+         * Grundeinstellungen
+         * -------------------------- */
         $this->RegisterPropertyInteger('CycleMinutes', 10);
 
-        // Innen-Sensoren (bis 10)
+        /* --------------------------
+         * Innensensoren (max. 10)
+         * -------------------------- */
         $this->RegisterPropertyInteger('IndoorSensorCount', 3);
         for ($i = 1; $i <= 10; $i++) {
             $this->RegisterPropertyInteger("IndoorHumidity_$i", 0);
             $this->RegisterPropertyInteger("IndoorTemperature_$i", 0);
         }
 
-        // Außen-Sensor
+        /* --------------------------
+         * Außensensoren
+         * -------------------------- */
         $this->RegisterPropertyInteger('OutdoorHumidity', 0);
         $this->RegisterPropertyInteger('OutdoorTemperature', 0);
-
-        // Absolute-Feuchte-Differenz
         $this->RegisterPropertyFloat('OutsideDeltaThreshold', 1.0);
 
-        // Feuchtesprung
+        /* --------------------------
+         * Feuchtesprung
+         * -------------------------- */
         $this->RegisterPropertyFloat('HumidityJumpThreshold', 2.0);
         $this->RegisterPropertyInteger('HumidityJumpMinutes', 5);
         $this->RegisterPropertyInteger('HumidityJumpMaxRuntime', 60);
 
-        // Nachtabschaltung
+        /* --------------------------
+         * Nachtabschaltung
+         * -------------------------- */
         $this->RegisterPropertyInteger('NightOffSwitch', 0);
-        $this->RegisterPropertyInteger('NightOffStart', 0);
-        $this->RegisterPropertyInteger('NightOffEnd', 0);
 
-        // Stellwert
+        /* --------------------------
+         * Lüftungssteuerung
+         * -------------------------- */
         $this->RegisterPropertyInteger('VentilationSetpointID', 0);
         $this->RegisterPropertyInteger('VentilationFeedbackID', 0);
 
-        // =========================
-        // Status-Variablen
-        // =========================
+        /* --------------------------
+         * Profile & Statusvariablen
+         * -------------------------- */
         $this->RegisterProfiles();
 
         $this->RegisterVariableInteger(
@@ -55,14 +64,14 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
         $this->RegisterVariableFloat(
             'AbsoluteHumidityIndoor',
-            'Absolute Feuchte Innen (Ø)',
+            'Absolute Feuchte Innen (g/m³)',
             '~Humidity',
             20
         );
 
         $this->RegisterVariableFloat(
             'AbsoluteHumidityOutdoor',
-            'Absolute Feuchte Außen',
+            'Absolute Feuchte Außen (g/m³)',
             '~Humidity',
             30
         );
@@ -74,9 +83,9 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
             40
         );
 
-        // =========================
-        // Timer
-        // =========================
+        /* --------------------------
+         * Timer
+         * -------------------------- */
         $this->RegisterTimer(
             'ControlTimer',
             $this->ReadPropertyInteger('CycleMinutes') * 60 * 1000,
@@ -84,55 +93,80 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
         );
     }
 
-    // ======================================================
-    // Profile
-    // ======================================================
+    /* ==========================================================
+     * APPLY CHANGES
+     * ========================================================== */
+    public function ApplyChanges()
+    {
+        parent::ApplyChanges();
+
+        // Timer-Intervall aktualisieren
+        $this->SetTimerInterval(
+            'ControlTimer',
+            $this->ReadPropertyInteger('CycleMinutes') * 60 * 1000
+        );
+    }
+
+    /* ==========================================================
+     * PROFILE
+     * ========================================================== */
     private function RegisterProfiles(): void
     {
         if (!IPS_VariableProfileExists('CRVStatus')) {
             IPS_CreateVariableProfile('CRVStatus', VARIABLETYPE_INTEGER);
             IPS_SetVariableProfileAssociation('CRVStatus', 0, 'Aus', 'Power', 0x808080);
-            IPS_SetVariableProfileAssociation('CRVStatus', 1, 'Normal', 'Ventilation', 0x00FF00);
+            IPS_SetVariableProfileAssociation('CRVStatus', 1, 'Normalbetrieb', 'Ventilation', 0x00FF00);
             IPS_SetVariableProfileAssociation('CRVStatus', 2, 'Feuchtesprung', 'Drops', 0xFFA500);
             IPS_SetVariableProfileAssociation('CRVStatus', 3, 'Nachtabschaltung', 'Moon', 0x0000FF);
             IPS_SetVariableProfileAssociation('CRVStatus', 4, 'Fehler', 'Warning', 0xFF0000);
         }
     }
 
-    // ======================================================
-    // Hauptregelung
-    // ======================================================
-    public function Run()
+    /* ==========================================================
+     * MANUELLER AUFRUF (Form Button / Timer)
+     * ========================================================== */
+    public function CRV_Run()
     {
-        // -------------------------
-        // Absolute Feuchte innen
-        // -------------------------
-        $count = $this->ReadPropertyInteger('IndoorSensorCount');
-        $absValues = [];
+        $this->SendDebug('CRV', 'Regelung gestartet', 0);
+        $this->Run();
+    }
 
-        for ($i = 1; $i <= $count; $i++) {
+    /* ==========================================================
+     * HAUPTLOGIK
+     * ========================================================== */
+    private function Run()
+    {
+        /* --------------------------
+         * Absolute Feuchte innen
+         * -------------------------- */
+        $sensorCount = $this->ReadPropertyInteger('IndoorSensorCount');
+        $absIndoorValues = [];
+
+        for ($i = 1; $i <= $sensorCount; $i++) {
             $hID = $this->ReadPropertyInteger("IndoorHumidity_$i");
             $tID = $this->ReadPropertyInteger("IndoorTemperature_$i");
 
-            if ($hID > 0 && $tID > 0 && @IPS_VariableExists($hID) && @IPS_VariableExists($tID)) {
-                $absValues[] = $this->CalculateAbsoluteHumidity(
+            if ($hID > 0 && $tID > 0 && IPS_VariableExists($hID) && IPS_VariableExists($tID)) {
+                $absIndoorValues[] = $this->CalculateAbsoluteHumidity(
                     floatval(GetValue($tID)),
                     floatval(GetValue($hID))
                 );
             }
         }
 
-        if (count($absValues) === 0) {
+        if (count($absIndoorValues) === 0) {
             $this->SetValue('Status', 4);
             return;
         }
 
-        $absIndoor = array_sum($absValues) / count($absValues);
+        $absIndoor = array_sum($absIndoorValues) / count($absIndoorValues);
         $this->SetValue('AbsoluteHumidityIndoor', round($absIndoor, 2));
 
-        // -------------------------
-        // Absolute Feuchte außen
-        // -------------------------
+        /* --------------------------
+         * Absolute Feuchte außen
+         * -------------------------- */
+        $absOutdoor = $absIndoor;
+
         $outH = $this->ReadPropertyInteger('OutdoorHumidity');
         $outT = $this->ReadPropertyInteger('OutdoorTemperature');
 
@@ -141,32 +175,26 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
                 floatval(GetValue($outT)),
                 floatval(GetValue($outH))
             );
-        } else {
-            $absOutdoor = $absIndoor;
         }
 
         $this->SetValue('AbsoluteHumidityOutdoor', round($absOutdoor, 2));
 
-        // -------------------------
-        // Nachtabschaltung
-        // -------------------------
+        /* --------------------------
+         * Nachtabschaltung
+         * -------------------------- */
         $nightActive = false;
         $nightSwitch = $this->ReadPropertyInteger('NightOffSwitch');
-
         if ($nightSwitch > 0 && IPS_VariableExists($nightSwitch)) {
             $nightActive = GetValueBoolean($nightSwitch);
         }
 
-        // -------------------------
-        // Feuchtesprung
-        // -------------------------
+        /* --------------------------
+         * Feuchtesprung (Override!)
+         * -------------------------- */
         $jumpThreshold = $this->ReadPropertyFloat('HumidityJumpThreshold');
-        $jump = ($absIndoor - $absOutdoor) >= $jumpThreshold;
+        $jumpDetected = ($absIndoor - $absOutdoor) >= $jumpThreshold;
 
-        // -------------------------
-        // Entscheidungslogik
-        // -------------------------
-        if ($jump) {
+        if ($jumpDetected) {
             $this->SetValue('Status', 2);
             $this->SetValue('NightOverrideActive', true);
             $this->SetVentilation(96);
@@ -175,15 +203,18 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
         $this->SetValue('NightOverrideActive', false);
 
+        /* --------------------------
+         * Nachtabschaltung greift
+         * -------------------------- */
         if ($nightActive) {
             $this->SetValue('Status', 3);
             $this->SetVentilation(0);
             return;
         }
 
-        // -------------------------
-        // Normalbetrieb
-        // -------------------------
+        /* --------------------------
+         * Normalbetrieb (Sommer/Winter)
+         * -------------------------- */
         $delta = $absIndoor - $absOutdoor;
         if ($delta >= $this->ReadPropertyFloat('OutsideDeltaThreshold')) {
             $this->SetValue('Status', 1);
@@ -194,11 +225,12 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
         }
     }
 
-    // ======================================================
-    // Hilfsfunktionen
-    // ======================================================
+    /* ==========================================================
+     * HILFSFUNKTIONEN
+     * ========================================================== */
     private function CalculateAbsoluteHumidity(float $temp, float $rh): float
     {
+        // Magnus-Formel
         $ps = 6.112 * exp((17.62 * $temp) / (243.12 + $temp));
         $p  = ($rh / 100.0) * $ps;
         return (216.7 * $p) / ($temp + 273.15);
@@ -206,9 +238,10 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
     private function CalculateStagePercent(float $delta): int
     {
-        $steps = [12, 24, 36, 48, 60, 72, 84, 96];
-        $index = min(7, max(0, intval($delta)));
-        return $steps[$index];
+        // 8 Stufen: 12–96 %
+        $stages = [12, 24, 36, 48, 60, 72, 84, 96];
+        $index = min(7, max(0, intval(round($delta))));
+        return $stages[$index];
     }
 
     private function SetVentilation(int $percent): void
