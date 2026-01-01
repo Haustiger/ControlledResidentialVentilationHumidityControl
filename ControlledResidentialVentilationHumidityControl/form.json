@@ -2,15 +2,9 @@
   "elements": [
     {
       "type": "ExpansionPanel",
-      "caption": "Allgemeine Einstellungen",
+      "caption": "Allgemein",
       "items": [
-        {
-          "type": "NumberSpinner",
-          "name": "CycleMinutes",
-          "caption": "Regelintervall (Minuten)",
-          "minimum": 5,
-          "maximum": 30
-        }
+        { "type": "NumberSpinner", "name": "CycleMinutes", "caption": "Regelintervall (Minuten)", "minimum": 5, "maximum": 30 }
       ]
     },
 
@@ -18,54 +12,32 @@
       "type": "ExpansionPanel",
       "caption": "Innensensoren",
       "items": [
-        {
-          "type": "NumberSpinner",
-          "name": "IndoorSensorCount",
-          "caption": "Anzahl Innensensoren",
-          "minimum": 1,
-          "maximum": 10
-        },
+        { "type": "NumberSpinner", "name": "IndoorSensorCount", "caption": "Anzahl Innensensoren", "minimum": 1, "maximum": 10 },
 
-        { "type": "SelectVariable", "name": "IndoorHumidity_1", "caption": "Innen Feuchte 1 (rF %)" },
-        { "type": "SelectVariable", "name": "IndoorTemperature_1", "caption": "Innen Temperatur 1 (°C)" },
+        { "type": "SelectVariable", "name": "IndoorHumidity_1", "caption": "Feuchte 1 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemperature_1", "caption": "Temperatur 1 (°C)" },
 
-        { "type": "SelectVariable", "name": "IndoorHumidity_2", "caption": "Innen Feuchte 2 (rF %)" },
-        { "type": "SelectVariable", "name": "IndoorTemperature_2", "caption": "Innen Temperatur 2 (°C)" },
+        { "type": "SelectVariable", "name": "IndoorHumidity_2", "caption": "Feuchte 2 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemperature_2", "caption": "Temperatur 2 (°C)" },
 
-        { "type": "SelectVariable", "name": "IndoorHumidity_3", "caption": "Innen Feuchte 3 (rF %)" },
-        { "type": "SelectVariable", "name": "IndoorTemperature_3", "caption": "Innen Temperatur 3 (°C)" }
+        { "type": "SelectVariable", "name": "IndoorHumidity_3", "caption": "Feuchte 3 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemperature_3", "caption": "Temperatur 3 (°C)" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity_4", "caption": "Feuchte 4 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemperature_4", "caption": "Temperatur 4 (°C)" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity_5", "caption": "Feuchte 5 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemperature_5", "caption": "Temperatur 5 (°C)" }
       ]
     },
 
     {
       "type": "ExpansionPanel",
-      "caption": "Außensensoren (Sommer / Winter)",
+      "caption": "Außen / Sommer-Winter",
       "items": [
-        { "type": "SelectVariable", "name": "OutdoorHumidity", "caption": "Außen Feuchte (rF %)" },
+        { "type": "SelectVariable", "name": "OutdoorHumidity", "caption": "Außen Feuchte (%)" },
         { "type": "SelectVariable", "name": "OutdoorTemperature", "caption": "Außen Temperatur (°C)" },
-        {
-          "type": "NumberSpinner",
-          "name": "OutsideDeltaThreshold",
-          "caption": "Mindestdifferenz absolute Feuchte (g/m³)",
-          "minimum": 0.5,
-          "maximum": 10,
-          "digits": 1
-        }
-      ]
-    },
-
-    {
-      "type": "ExpansionPanel",
-      "caption": "Feuchtesprung",
-      "items": [
-        {
-          "type": "NumberSpinner",
-          "name": "HumidityJumpThreshold",
-          "caption": "Schwelle Feuchtesprung (g/m³)",
-          "minimum": 0.5,
-          "maximum": 10,
-          "digits": 1
-        }
+        { "type": "NumberSpinner", "name": "OutsideDeltaThreshold", "caption": "Mindestdifferenz g/m³", "minimum": 0.5, "maximum": 10, "digits": 1 }
       ]
     },
 
@@ -73,24 +45,23 @@
       "type": "ExpansionPanel",
       "caption": "Nachtabschaltung",
       "items": [
-        { "type": "SelectVariable", "name": "NightOffSwitch", "caption": "Nachtabschaltung aktiv (Bool)" }
+        { "type": "SelectVariable", "name": "NightOffSwitch", "caption": "Nachtmodus aktiv (Bool)" },
+        { "type": "NumberSpinner", "name": "NightStartMinute", "caption": "Startzeit (Minuten ab 0:00)", "minimum": 0, "maximum": 1439 },
+        { "type": "NumberSpinner", "name": "NightEndMinute", "caption": "Endzeit (Minuten ab 0:00)", "minimum": 0, "maximum": 1439 }
       ]
     },
 
     {
       "type": "ExpansionPanel",
-      "caption": "Lüftungssteuerung",
+      "caption": "Lüftung",
       "items": [
-        { "type": "SelectVariable", "name": "VentilationSetpointID", "caption": "Lüftungsstellwert (%)" }
+        { "type": "SelectVariable", "name": "VentilationSetpointID", "caption": "Stellwert (%) – schreibbar!" },
+        { "type": "SelectVariable", "name": "VentilationFeedbackID", "caption": "Rückmeldung (%) – nur lesen" }
       ]
     }
   ],
 
   "actions": [
-    {
-      "type": "Button",
-      "caption": "Regelung jetzt ausführen",
-      "onClick": "IPS_RequestAction($id, \"ManualRun\", 1);"
-    }
+    { "type": "Button", "caption": "Regelung jetzt ausführen", "onClick": "IPS_RequestAction($id, \"ManualRun\", 1);" }
   ]
 }
