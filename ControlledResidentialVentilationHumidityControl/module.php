@@ -8,17 +8,18 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     {
         parent::Create();
 
-        // ===== Profile IMMER zuerst =====
+        // 1. Eigene Profile anlegen (OHNE ~)
         $this->CreateProfiles();
 
-        // ===== Statusvariablen =====
+        // 2. Statusvariable
         $this->RegisterVariableInteger(
             'VentilationStatus',
             'Status Lüftung',
-            '~CRVStatus',
+            'CRVStatus',
             10
         );
 
+        // 3. Stellwert in Prozent
         $this->RegisterVariableInteger(
             'VentilationPercent',
             'Lüftungsstellwert (%)',
@@ -26,7 +27,7 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
             20
         );
 
-        // ===== Timer (noch ohne Logik) =====
+        // 4. Timer (vorbereitet)
         $this->RegisterTimer(
             'ControlTimer',
             0,
@@ -35,30 +36,28 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     }
 
     /**
-     * Profile zentral und statisch anlegen
+     * Eigene Profile anlegen (keine Systemprofile!)
      */
     private function CreateProfiles(): void
     {
-        // === Statusprofil ===
-        if (!IPS_VariableProfileExists('~CRVStatus')) {
+        if (!IPS_VariableProfileExists('CRVStatus')) {
 
-            IPS_CreateVariableProfile('~CRVStatus', VARIABLETYPE_INTEGER);
+            IPS_CreateVariableProfile('CRVStatus', VARIABLETYPE_INTEGER);
 
-            IPS_SetVariableProfileAssociation('~CRVStatus', 0, 'Aus', '', 0x808080);
-            IPS_SetVariableProfileAssociation('~CRVStatus', 1, 'Betrieb', '', 0x00FF00);
-            IPS_SetVariableProfileAssociation('~CRVStatus', 2, 'Feuchtesprung', '', 0xFFA500);
-            IPS_SetVariableProfileAssociation('~CRVStatus', 3, 'Nachtabschaltung', '', 0x0000FF);
-            IPS_SetVariableProfileAssociation('~CRVStatus', 4, 'Fehler', '', 0xFF0000);
+            IPS_SetVariableProfileAssociation('CRVStatus', 0, 'Aus', '', 0x808080);
+            IPS_SetVariableProfileAssociation('CRVStatus', 1, 'Betrieb', '', 0x00FF00);
+            IPS_SetVariableProfileAssociation('CRVStatus', 2, 'Feuchtesprung', '', 0xFFA500);
+            IPS_SetVariableProfileAssociation('CRVStatus', 3, 'Nachtabschaltung', '', 0x0000FF);
+            IPS_SetVariableProfileAssociation('CRVStatus', 4, 'Fehler', '', 0xFF0000);
         }
     }
 
     /**
-     * Zentrale Regel-Funktion (Platzhalter)
+     * Zentrale Regel-Funktion (noch ohne Logik)
      */
     public function Control(): void
     {
-        // Noch keine Regelung aktiv
-        // Status bewusst auf "Aus"
+        // Aktuell: Modul im Ruhezustand
         $this->SetValue('VentilationStatus', 0);
     }
 }
