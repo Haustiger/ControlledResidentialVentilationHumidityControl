@@ -2,11 +2,21 @@
 
 class ControlledResidentialVentilationHumidityControl extends IPSModule
 {
+    private const STAGES = [
+        1 => 12,
+        2 => 24,
+        3 => 36,
+        4 => 48,
+        5 => 60,
+        6 => 72,
+        7 => 84,
+        8 => 96
+    ];
+
     public function Create()
     {
         parent::Create();
 
-        // Eigenschaften
         $this->RegisterPropertyInteger('IndoorSensorCount', 1);
         for ($i = 1; $i <= 10; $i++) {
             $this->RegisterPropertyInteger('IndoorSensor' . $i, 0);
@@ -14,31 +24,24 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
         $this->RegisterPropertyInteger('OutdoorAbsHumidity', 0);
         $this->RegisterPropertyInteger('VentilationSetpointID', 0);
 
-        // Profile
         if (!IPS_VariableProfileExists('CRV.AbsHumidity')) {
             IPS_CreateVariableProfile('CRV.AbsHumidity', VARIABLETYPE_FLOAT);
             IPS_SetVariableProfileText('CRV.AbsHumidity', '', ' g/m³');
             IPS_SetVariableProfileDigits('CRV.AbsHumidity', 2);
         }
 
-        // Status / Debug
-        $this->RegisterVariableFloat('Debug_IndoorAbs', 'Absolute Feuchte innen', 'CRV.AbsHumidity', 10);
-        $this->RegisterVariableFloat('Debug_OutdoorAbs', 'Absolute Feuchte außen', 'CRV.AbsHumidity', 20);
-        $this->RegisterVariableInteger('Debug_Setpoint', 'Lüftungsstellwert (%)', '~Intensity.100', 30);
-        $this->RegisterVariableBoolean('Debug_Jump', 'Feuchtesprung aktiv', '~Switch', 40);
-        $this->RegisterVariableString('Debug_Mode', 'Regelmodus', '', 50);
+        $this->RegisterVariableFloat('IndoorAbs', 'Absolute Feuchte innen', 'CRV.AbsHumidity', 10);
+        $this->RegisterVariableFloat('OutdoorAbs', 'Absolute Feuchte außen', 'CRV.AbsHumidity', 20);
+        $this->RegisterVariableInteger('Stage', 'Lüftungsstufe', '', 30);
+        $this->RegisterVariableInteger('Setpoint', 'Lüftungsstellwert %', '~Intensity.100', 40);
+        $this->RegisterVariableBoolean('JumpActive', 'Feuchtesprung aktiv', '~Switch', 50);
+        $this->RegisterVariableString('JumpUntilText', 'Feuchtesprung aktiv bis', '', 60);
 
-        // interne Zustände
         $this->RegisterVariableFloat('LastIndoorAbs', 'Letzte Innenfeuchte', 'CRV.AbsHumidity', 90);
-        $this->RegisterVariableInteger('LastSetpoint', 'Letzter Stellwert', '~Intensity.100', 91);
-        $this->RegisterVariableInteger('JumpUntil', 'Feuchtesprung bis', '', 92);
+        $this->RegisterVariableInteger('LastStage', 'Letzte Stufe', '', 91);
+        $this->RegisterVariableInteger('JumpUntil', 'JumpUntil', '', 92);
 
-        // Timer
-        $this->RegisterTimer(
-            'ControlTimer',
-            300,
-            'IPS_RequestAction($_IPS["TARGET"], "TimerRun", 0);'
-        );
+        $this->RegisterTimer('ControlTimer', 300, 'IPS_RequestAction($_IPS["TARGET"], "TimerRun", 0);');
     }
 
     public function RequestAction($Ident, $Value)
@@ -52,80 +55,62 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     {
         $now = time();
 
-        // Sensorwerte sammeln
-        $count = $this->ReadPropertyInteger('IndoorSensorCount');
         $values = [];
-
-        for ($i = 1; $i <= $count; $i++) {
+        for ($i = 1; $i <= $this->ReadPropertyInteger('IndoorSensorCount'); $i++) {
             $id = $this->ReadPropertyInteger('IndoorSensor' . $i);
             if ($id > 0 && IPS_VariableExists($id)) {
                 $values[] = floatval(GetValue($id));
             }
         }
+        if (!$values) return;
 
-        if (count($values) === 0) {
-            return;
-        }
-
-        $avgIndoor = array_sum($values) / count($values);
-        $maxIndoor = max($values);
+        $avg = array_sum($values) / count($values);
+        $max = max($values);
 
         $outID = $this->ReadPropertyInteger('OutdoorAbsHumidity');
-        $outdoor = ($outID > 0 && IPS_VariableExists($outID))
-            ? floatval(GetValue($outID))
-            : $avgIndoor;
+        $out = ($outID > 0 && IPS_VariableExists($outID)) ? floatval(GetValue($outID)) : $avg;
 
-        SetValue($this->GetIDForIdent('Debug_IndoorAbs'), $avgIndoor);
-        SetValue($this->GetIDForIdent('Debug_OutdoorAbs'), $outdoor);
+        SetValue($this->GetIDForIdent('IndoorAbs'), $avg);
+        SetValue($this->GetIDForIdent('OutdoorAbs'), $out);
 
-        // Feuchtesprung-Erkennung
-        $lastIndoor = GetValueFloat($this->GetIDForIdent('LastIndoorAbs'));
-        $jumpActive = false;
-
-        if (($maxIndoor - $lastIndoor) >= 1.5) {
+        // Feuchtesprung
+        if ($max - GetValueFloat($this->GetIDForIdent('LastIndoorAbs')) >= 1.5) {
             SetValue($this->GetIDForIdent('JumpUntil'), $now + 1800);
         }
 
-        if (GetValueInteger($this->GetIDForIdent('JumpUntil')) > $now) {
-            $jumpActive = true;
+        $jumpActive = GetValueInteger($this->GetIDForIdent('JumpUntil')) > $now;
+        SetValue($this->GetIDForIdent('JumpActive'), $jumpActive);
+        SetValue(
+            $this->GetIDForIdent('JumpUntilText'),
+            $jumpActive ? date('d.m.Y H:i', GetValueInteger($this->GetIDForIdent('JumpUntil'))) : '—'
+        );
+
+        // Basis-Stufe
+        if ($avg < 7.0) $stage = 1;
+        elseif ($avg < 8.5) $stage = 2;
+        elseif ($avg < 10.0) $stage = 4;
+        elseif ($avg < 11.5) $stage = 6;
+        else $stage = 7;
+
+        if ($jumpActive) $stage = max($stage, 5);
+
+        // Sanftes Abregeln
+        $lastStage = GetValueInteger($this->GetIDForIdent('LastStage'));
+        if ($stage < $lastStage) {
+            $stage = $lastStage - 1;
         }
 
-        SetValue($this->GetIDForIdent('Debug_Jump'), $jumpActive);
+        $stage = max(1, min(8, $stage));
 
-        // Basiskennlinie
-        if ($avgIndoor < 7.0) $target = 10;
-        elseif ($avgIndoor < 8.5) $target = 25;
-        elseif ($avgIndoor < 10.0) $target = 45;
-        elseif ($avgIndoor < 11.5) $target = 65;
-        else $target = 85;
+        SetValue($this->GetIDForIdent('Stage'), $stage);
+        SetValue($this->GetIDForIdent('Setpoint'), self::STAGES[$stage]);
 
-        // Außenbewertung
-        $delta = $avgIndoor - $outdoor;
-        if ($delta < 0) $target -= 20;
-        elseif ($delta > 3) $target += 10;
+        SetValue($this->GetIDForIdent('LastStage'), $stage);
+        SetValue($this->GetIDForIdent('LastIndoorAbs'), $avg);
 
-        // Feuchtesprung-Zuschlag
-        if ($jumpActive) {
-            $target += 30;
-            SetValue($this->GetIDForIdent('Debug_Mode'), 'Feuchtesprung');
-        } else {
-            SetValue($this->GetIDForIdent('Debug_Mode'), 'Normal');
-        }
-
-        $target = max(0, min(100, $target));
-
-        // Anti-Schwingen
-        $lastSet = GetValueInteger($this->GetIDForIdent('LastSetpoint'));
-        $target = max($lastSet - 10, min($lastSet + 10, $target));
-
-        // Ausgaben
-        SetValue($this->GetIDForIdent('Debug_Setpoint'), $target);
-        SetValue($this->GetIDForIdent('LastSetpoint'), $target);
-        SetValue($this->GetIDForIdent('LastIndoorAbs'), $avgIndoor);
-
-        $out = $this->ReadPropertyInteger('VentilationSetpointID');
-        if ($out > 0 && IPS_VariableExists($out)) {
-            RequestAction($out, $target);
+        $outVar = $this->ReadPropertyInteger('VentilationSetpointID');
+        if ($outVar > 0 && IPS_VariableExists($outVar)) {
+            RequestAction($outVar, self::STAGES[$stage]);
         }
     }
 }

@@ -1,9 +1,6 @@
 {
   "elements": [
-    {
-      "type": "Label",
-      "caption": "Eingänge – Absolute Feuchte (g/m³)"
-    },
+    { "type": "Label", "caption": "Eingänge – Absolute Feuchte (g/m³)" },
     {
       "type": "NumberSpinner",
       "name": "IndoorSensorCount",
