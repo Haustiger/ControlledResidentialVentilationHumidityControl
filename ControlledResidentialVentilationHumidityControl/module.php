@@ -162,7 +162,7 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
         $id = $this->ReadPropertyInteger('VentilationSetpointID');
         if ($id > 0 && IPS_VariableExists($id) && IPS_GetVariable($id)['VariableIsWritable']) {
-            SetValue($id, $percent);
+            RequestAction($id, $percent);
         }
     }
 
