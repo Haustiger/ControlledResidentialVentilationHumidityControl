@@ -1,66 +1,180 @@
-Controlled Residential Ventilation – Feuchtebasierte Regelung
-Version 3.0 (Build 8)
-============================================================
+Controlled Residential Ventilation – Feuchteregelung
+Version 3.0 | Build 8
+===============================================
 
-ZIEL
-----
-Dieses IP-SYMCON-Modul steuert eine kontrollierte Wohnraumlüftung
-auf Basis der ABSOLUTEN Feuchte (g/m³).
+1. Zweck des Moduls
+-------------------
+Dieses Modul steuert eine kontrollierte Wohnraumlüftung
+auf Basis der gemessenen Luftfeuchte mehrerer Räume.
 
-Bis zu 10 Innensensoren werden unterstützt.
-Immer der höchste Feuchtewert bestimmt die Lüftungsleistung.
+Ziel:
+- Vermeidung von Feuchteschäden
+- Schnelle Reaktion auf Feuchtesprünge (z.B. Duschen)
+- Ruhiger Betrieb bei Nacht
+- Einfache Einbindung in IP-SYMCON (ohne feste Busbindung)
 
-WARUM ABSOLUTE FEUCHTE?
------------------------
-Relative Feuchte ist temperaturabhängig.
-Absolute Feuchte beschreibt die tatsächliche Wassermenge
-in der Luft und ist physikalisch korrekt für Lüftungsregelungen.
+Die Ausgabe erfolgt ausschließlich als Stellwert in Prozent (0–100 %).
 
-FORMEL
--------
-Absolute Feuchte (g/m³):
-  AH = 216.7 * (rF/100 * Dampfdruck) / (273.15 + Temperatur)
 
-LÜFTUNGSSTUFEN
+2. Unterstützte Sensoren
+------------------------
+- Relative Feuchte (% rF)
+- Temperatur (°C)
+
+Die Regelung arbeitet intern mit:
+→ absoluter Feuchte (g/m³)
+
+Warum?
+- Absolute Feuchte ist unabhängig von der Temperatur
+- Sommer / Winter automatisch korrekt
+- Vergleich Innen / Innen sinnvoll
+
+
+3. Sensorlogik
 --------------
-Die Lüftung wird ausschließlich in Prozent angesteuert:
+- Es können 1 bis 10 Innensensoren eingebunden werden
+- Pro Sensor sind erforderlich:
+  - 1x Feuchte (% rF)
+  - 1x Temperatur (°C)
+- Es wird IMMER der Sensor mit der höchsten Feuchte verwendet
+- Niedrige Werte anderer Sensoren reduzieren die Lüftung NICHT
 
-Stufe 1 → 12 %
-Stufe 2 → 24 %
-Stufe 3 → 36 %
-Stufe 4 → 48 %
-Stufe 5 → 60 %
-Stufe 6 → 72 %
-Stufe 7 → 84 %
-Stufe 8 → 96 %
 
-REGELZYKLUS
------------
-Frei einstellbar: 5–30 Minuten
-
-NACHTABSCHALTUNG
-----------------
-Über eine externe Boolean-Variable.
-Bei Aktivierung wird die Lüftung deaktiviert
-(Statusanzeige blau).
-
-STATUSAMPEL
------------
-Aus            → Grau
-Betrieb        → Grün
-Fehler         → Rot
-Nachtbetrieb   → Blau
-
-KOMPATIBILITÄT
+4. Regelzyklus
 --------------
-• KNX optional
-• Keine Herstellerbindung
-• Jede SYMCON-Variable nutzbar
-• Vollständig updatefähig
+- Frei einstellbar zwischen 5 und 30 Minuten
+- Standard: 10 Minuten
+- Bei jedem Zyklus:
+  - Sensoren lesen
+  - Absolute Feuchte berechnen
+  - Feuchtesprung prüfen
+  - Ziel-Stellwert berechnen
+  - Ausgabe aktualisieren
 
-ZUKÜNFTIGE ERWEITERUNGEN
+
+5. Feuchtesprung-Erkennung (KRITISCH)
+-------------------------------------
+Definition:
+Ein Feuchtesprung liegt vor, wenn:
+
+- die relative Feuchte
+- um mindestens X % rF
+- innerhalb eines Regelzyklus ansteigt
+
+(Standard: 10 % rF)
+
+Wirkung:
+- Lüftung wird IMMER um +3 Stufen erhöht
+- entspricht +36 %
+- unabhängig von:
+  - Tageszeit
+  - Nachtabschaltung
+  - Sommer / Winter
+
+Maximalwert: 96 %
+
+
+6. Nachtabschaltung
+-------------------
+Optional kann eine BOOL-Variable verknüpft werden.
+
+TRUE  = Nachtbetrieb aktiv → Lüftung AUS
+FALSE = Normalbetrieb
+
+WICHTIG:
+- Ein Feuchtesprung übersteuert die Nachtabschaltung
+- In diesem Fall:
+  - Lüftung wird für max. 60 Minuten aktiviert
+  - danach automatisch wieder abgeschaltet
+
+
+7. Ausgabewerte
+---------------
+Das Modul schreibt ausschließlich:
+
+- einen Prozentwert (0–100 %)
+
+Diese Variable MUSS:
+- schreibbar sein
+- per RequestAction beschreibbar sein
+
+Typische Anbindung:
+- KNX DPT 5.001
+- ModBus Holding Register
+- Virtuelle Variable mit Weiterverarbeitung
+
+
+8. Status-Variablen
+-------------------
+Lüftungsstatus (~CRV_Status):
+
+0 = Aus
+1 = Betrieb
+3 = Feuchtesprung aktiv
+4 = Fehler (keine Sensoren)
+5 = Nachtabschaltung
+
+Diese Variable dient:
+- Diagnose
+- Visualisierung
+- WebFront-Ampel
+
+
+9. Typische Fehler & Lösungen
+-----------------------------
+
+Fehler:
+"Profilname darf keine Sonderzeichen enthalten"
+
+Ursache:
+- Profilname enthält Punkt oder #
+- Lösung:
+  - Profilname darf nur ~ A–Z a–z 0–9 _ enthalten
+
+
+Fehler:
+"Variable #0 existiert nicht"
+
+Ursache:
+- Variable nicht verknüpft
+- SensorCount zu hoch
+- Lösung:
+  - Nur Sensoren 1..N befüllen
+  - Rest leer lassen
+
+
+10. Bekannte Einschränkungen (Version 3.0)
+------------------------------------------
+- Keine Außenluft-Referenz
+- Keine selbstlernende Optimierung
+- Keine Mindestlaufzeit je Stufe
+- Keine Live-Validierung im Formular
+
+Diese Funktionen werden ERST ergänzt,
+wenn der stabile Betrieb bestätigt ist.
+
+
+11. Empfohlene Testphase
 -----------------------
-• Selbstlernende Regelung
-• Erfolgskontrolle Lüften
-• Automatische Sommer-/Winterlogik
-• Taupunktbasierte Optimierung
+- Mindestens 48 Stunden Betrieb
+- Beobachten:
+  - Reaktion auf Duschen
+  - Nachtverhalten
+  - Prozent-Ausgabe
+  - Status-Ampel
+
+Erst danach:
+→ Erweiterungen aktivieren
+
+
+12. Support & Erweiterungen
+---------------------------
+Dieses Modul ist bewusst:
+- einfach
+- robust
+- transparent
+
+Erweiterungen erfolgen:
+- schrittweise
+- rückwärtskompatibel
+- erst nach erfolgreichem Feldtest

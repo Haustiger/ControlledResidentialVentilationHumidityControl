@@ -1,184 +1,116 @@
 {
-  "elements": [
-
-    {
-      "type": "NumberSpinner",
-      "name": "SensorCount",
-      "caption": "Anzahl Innensensoren (1–10)",
-      "minimum": 1,
-      "maximum": 10,
-      "reload": true
-    },
-
-    {
-      "type": "ExpansionPanel",
-      "caption": "Innensensoren",
-      "items": [
-
+    "elements": [
         {
-          "type": "Label",
-          "caption": "Je Sensor werden zwei Float-Variablen benötigt:\n• Relative Feuchte (% rF, lesbar)\n• Temperatur (°C, lesbar)\nNicht konfigurierte Sensoren werden ignoriert."
+            "type": "NumberSpinner",
+            "name": "SensorCount",
+            "caption": "Anzahl Innensensoren (1–10)",
+            "minimum": 1,
+            "maximum": 10
         },
 
         {
-          "type": "RowLayout",
-          "visible": ["SensorCount", ">=", 1],
-          "items": [
-            { "type": "SelectVariable", "name": "HumiditySensor1", "caption": "Sensor 1 – Feuchte (%)" },
-            { "type": "SelectVariable", "name": "TemperatureSensor1", "caption": "Sensor 1 – Temperatur (°C)" }
-          ]
+            "type": "ExpansionPanel",
+            "caption": "Innensensoren (Feuchte % rF / Temperatur °C)",
+            "items": [
+                { "type": "SelectVariable", "name": "HumiditySensor1", "caption": "Feuchte Sensor 1 (% rF)" },
+                { "type": "SelectVariable", "name": "TemperatureSensor1", "caption": "Temperatur Sensor 1 (°C)" },
+
+                { "type": "SelectVariable", "name": "HumiditySensor2", "caption": "Feuchte Sensor 2 (% rF)" },
+                { "type": "SelectVariable", "name": "TemperatureSensor2", "caption": "Temperatur Sensor 2 (°C)" },
+
+                { "type": "SelectVariable", "name": "HumiditySensor3", "caption": "Feuchte Sensor 3 (% rF)" },
+                { "type": "SelectVariable", "name": "TemperatureSensor3", "caption": "Temperatur Sensor 3 (°C)" },
+
+                { "type": "SelectVariable", "name": "HumiditySensor4", "caption": "Feuchte Sensor 4 (% rF)" },
+                { "type": "SelectVariable", "name": "TemperatureSensor4", "caption": "Temperatur Sensor 4 (°C)" },
+
+                { "type": "SelectVariable", "name": "HumiditySensor5", "caption": "Feuchte Sensor 5 (% rF)" },
+                { "type": "SelectVariable", "name": "TemperatureSensor5", "caption": "Temperatur Sensor 5 (°C)" },
+
+                { "type": "SelectVariable", "name": "HumiditySensor6", "caption": "Feuchte Sensor 6 (% rF)" },
+                { "type": "SelectVariable", "name": "TemperatureSensor6", "caption": "Temperatur Sensor 6 (°C)" },
+
+                { "type": "SelectVariable", "name": "HumiditySensor7", "caption": "Feuchte Sensor 7 (% rF)" },
+                { "type": "SelectVariable", "name": "TemperatureSensor7", "caption": "Temperatur Sensor 7 (°C)" },
+
+                { "type": "SelectVariable", "name": "HumiditySensor8", "caption": "Feuchte Sensor 8 (% rF)" },
+                { "type": "SelectVariable", "name": "TemperatureSensor8", "caption": "Temperatur Sensor 8 (°C)" },
+
+                { "type": "SelectVariable", "name": "HumiditySensor9", "caption": "Feuchte Sensor 9 (% rF)" },
+                { "type": "SelectVariable", "name": "TemperatureSensor9", "caption": "Temperatur Sensor 9 (°C)" },
+
+                { "type": "SelectVariable", "name": "HumiditySensor10", "caption": "Feuchte Sensor 10 (% rF)" },
+                { "type": "SelectVariable", "name": "TemperatureSensor10", "caption": "Temperatur Sensor 10 (°C)" }
+            ]
         },
+
         {
-          "type": "RowLayout",
-          "visible": ["SensorCount", ">=", 2],
-          "items": [
-            { "type": "SelectVariable", "name": "HumiditySensor2", "caption": "Sensor 2 – Feuchte (%)" },
-            { "type": "SelectVariable", "name": "TemperatureSensor2", "caption": "Sensor 2 – Temperatur (°C)" }
-          ]
+            "type": "ExpansionPanel",
+            "caption": "Regelung & Zeitverhalten",
+            "items": [
+                {
+                    "type": "NumberSpinner",
+                    "name": "CycleTime",
+                    "caption": "Regelzyklus (Minuten)",
+                    "minimum": 5,
+                    "maximum": 30
+                },
+
+                {
+                    "type": "NumberSpinner",
+                    "name": "HumidityJumpThreshold",
+                    "caption": "Feuchtesprung-Schwelle (% rF)",
+                    "minimum": 5,
+                    "maximum": 30
+                }
+            ]
         },
+
         {
-          "type": "RowLayout",
-          "visible": ["SensorCount", ">=", 3],
-          "items": [
-            { "type": "SelectVariable", "name": "HumiditySensor3", "caption": "Sensor 3 – Feuchte (%)" },
-            { "type": "SelectVariable", "name": "TemperatureSensor3", "caption": "Sensor 3 – Temperatur (°C)" }
-          ]
+            "type": "ExpansionPanel",
+            "caption": "Nachtabschaltung (Schallschutz)",
+            "items": [
+                {
+                    "type": "SelectVariable",
+                    "name": "NightDisableInput",
+                    "caption": "Nachtabschaltung EIN/AUS (BOOL, optional)"
+                },
+                {
+                    "type": "TimeSpinner",
+                    "name": "NightOffTime",
+                    "caption": "Nachtabschaltung EIN ab"
+                },
+                {
+                    "type": "TimeSpinner",
+                    "name": "NightOnTime",
+                    "caption": "Nachtabschaltung AUS ab"
+                }
+            ]
         },
+
         {
-          "type": "RowLayout",
-          "visible": ["SensorCount", ">=", 4],
-          "items": [
-            { "type": "SelectVariable", "name": "HumiditySensor4", "caption": "Sensor 4 – Feuchte (%)" },
-            { "type": "SelectVariable", "name": "TemperatureSensor4", "caption": "Sensor 4 – Temperatur (°C)" }
-          ]
-        },
-        {
-          "type": "RowLayout",
-          "visible": ["SensorCount", ">=", 5],
-          "items": [
-            { "type": "SelectVariable", "name": "HumiditySensor5", "caption": "Sensor 5 – Feuchte (%)" },
-            { "type": "SelectVariable", "name": "TemperatureSensor5", "caption": "Sensor 5 – Temperatur (°C)" }
-          ]
-        },
-        {
-          "type": "RowLayout",
-          "visible": ["SensorCount", ">=", 6],
-          "items": [
-            { "type": "SelectVariable", "name": "HumiditySensor6", "caption": "Sensor 6 – Feuchte (%)" },
-            { "type": "SelectVariable", "name": "TemperatureSensor6", "caption": "Sensor 6 – Temperatur (°C)" }
-          ]
-        },
-        {
-          "type": "RowLayout",
-          "visible": ["SensorCount", ">=", 7],
-          "items": [
-            { "type": "SelectVariable", "name": "HumiditySensor7", "caption": "Sensor 7 – Feuchte (%)" },
-            { "type": "SelectVariable", "name": "TemperatureSensor7", "caption": "Sensor 7 – Temperatur (°C)" }
-          ]
-        },
-        {
-          "type": "RowLayout",
-          "visible": ["SensorCount", ">=", 8],
-          "items": [
-            { "type": "SelectVariable", "name": "HumiditySensor8", "caption": "Sensor 8 – Feuchte (%)" },
-            { "type": "SelectVariable", "name": "TemperatureSensor8", "caption": "Sensor 8 – Temperatur (°C)" }
-          ]
-        },
-        {
-          "type": "RowLayout",
-          "visible": ["SensorCount", ">=", 9],
-          "items": [
-            { "type": "SelectVariable", "name": "HumiditySensor9", "caption": "Sensor 9 – Feuchte (%)" },
-            { "type": "SelectVariable", "name": "TemperatureSensor9", "caption": "Sensor 9 – Temperatur (°C)" }
-          ]
-        },
-        {
-          "type": "RowLayout",
-          "visible": ["SensorCount", ">=", 10],
-          "items": [
-            { "type": "SelectVariable", "name": "HumiditySensor10", "caption": "Sensor 10 – Feuchte (%)" },
-            { "type": "SelectVariable", "name": "TemperatureSensor10", "caption": "Sensor 10 – Temperatur (°C)" }
-          ]
+            "type": "ExpansionPanel",
+            "caption": "Ausgabe & Rückmeldung",
+            "items": [
+                {
+                    "type": "SelectVariable",
+                    "name": "TargetPercentVariable",
+                    "caption": "Lüftungs-Stellwert Ziel (% – schreibbar)"
+                },
+                {
+                    "type": "SelectVariable",
+                    "name": "FeedbackPercentVariable",
+                    "caption": "Rückmeldung aktueller Lüftungswert (% – optional)"
+                }
+            ]
         }
-      ]
-    },
+    ],
 
-    {
-      "type": "ExpansionPanel",
-      "caption": "Außenluft (Sommer-/Winterabgleich)",
-      "items": [
+    "actions": [
         {
-          "type": "CheckBox",
-          "name": "UseOutsideReference",
-          "caption": "Außenluft berücksichtigen",
-          "reload": true
-        },
-        {
-          "type": "RowLayout",
-          "visible": ["UseOutsideReference", "==", true],
-          "items": [
-            { "type": "SelectVariable", "name": "OutsideHumidity", "caption": "Außenfeuchte (%)" },
-            { "type": "SelectVariable", "name": "OutsideTemperature", "caption": "Außentemperatur (°C)" }
-          ]
+            "type": "Button",
+            "caption": "Regelung jetzt ausführen",
+            "onClick": "CRVHC_Control($id);"
         }
-      ]
-    },
-
-    {
-      "type": "ExpansionPanel",
-      "caption": "Regelparameter",
-      "items": [
-        {
-          "type": "NumberSpinner",
-          "name": "CycleTime",
-          "caption": "Regelzyklus (Minuten)",
-          "minimum": 5,
-          "maximum": 30
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "HumidityJumpThreshold",
-          "caption": "Feuchtesprung (% rF)",
-          "minimum": 5,
-          "maximum": 30
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "HumidityJumpMinutes",
-          "caption": "Zeitfenster Feuchtesprung (Minuten)",
-          "minimum": 1,
-          "maximum": 10
-        }
-      ]
-    },
-
-    {
-      "type": "ExpansionPanel",
-      "caption": "Nachtabschaltung",
-      "items": [
-        {
-          "type": "SelectVariable",
-          "name": "NightDisableVariable",
-          "caption": "Nachtabschaltung EIN/AUS (Boolean, lesbar)"
-        }
-      ]
-    },
-
-    {
-      "type": "ExpansionPanel",
-      "caption": "Lüftungsansteuerung",
-      "items": [
-        {
-          "type": "SelectVariable",
-          "name": "TargetPercentVariable",
-          "caption": "Stellwert Lüftung (%) – Integer, schreibbar"
-        },
-        {
-          "type": "SelectVariable",
-          "name": "FeedbackPercentVariable",
-          "caption": "Rückmeldung Lüftung (%) – Integer, lesbar (optional)"
-        }
-      ]
-    }
-  ]
+    ]
 }
