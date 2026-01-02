@@ -1,94 +1,53 @@
 {
   "elements": [
-    { "type": "Label", "caption": "Innensensoren (relative Feuchte % und Temperatur °C)" },
-
+    { "type": "Label", "caption": "Innensensoren" },
     {
       "type": "NumberSpinner",
       "name": "IndoorSensorCount",
-      "caption": "Anzahl aktiver Innensensoren",
+      "caption": "Anzahl Innensensoren",
       "minimum": 1,
       "maximum": 10
     },
 
     {
       "type": "ExpansionPanel",
-      "caption": "Innensensoren",
+      "caption": "Innensensoren (rF / Temp)",
       "items": [
-        { "type": "SelectVariable", "name": "IndoorHumidity1", "caption": "rF Sensor 1 (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp1", "caption": "Temp Sensor 1 (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity2", "caption": "rF Sensor 2 (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp2", "caption": "Temp Sensor 2 (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity3", "caption": "rF Sensor 3 (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp3", "caption": "Temp Sensor 3 (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity4", "caption": "rF Sensor 4 (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp4", "caption": "Temp Sensor 4 (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity5", "caption": "rF Sensor 5 (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp5", "caption": "Temp Sensor 5 (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity6", "caption": "rF Sensor 6 (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp6", "caption": "Temp Sensor 6 (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity7", "caption": "rF Sensor 7 (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp7", "caption": "Temp Sensor 7 (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity8", "caption": "rF Sensor 8 (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp8", "caption": "Temp Sensor 8 (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity9", "caption": "rF Sensor 9 (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp9", "caption": "Temp Sensor 9 (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity10", "caption": "rF Sensor 10 (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp10", "caption": "Temp Sensor 10 (°C)" }
+        { "type": "SelectVariable", "name": "IndoorHumidity1", "caption": "rF 1 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp1", "caption": "Temp 1 (°C)" },
+        { "type": "SelectVariable", "name": "IndoorHumidity2", "caption": "rF 2 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp2", "caption": "Temp 2 (°C)" },
+        { "type": "SelectVariable", "name": "IndoorHumidity3", "caption": "rF 3 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp3", "caption": "Temp 3 (°C)" },
+        { "type": "SelectVariable", "name": "IndoorHumidity4", "caption": "rF 4 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp4", "caption": "Temp 4 (°C)" },
+        { "type": "SelectVariable", "name": "IndoorHumidity5", "caption": "rF 5 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp5", "caption": "Temp 5 (°C)" },
+        { "type": "SelectVariable", "name": "IndoorHumidity6", "caption": "rF 6 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp6", "caption": "Temp 6 (°C)" },
+        { "type": "SelectVariable", "name": "IndoorHumidity7", "caption": "rF 7 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp7", "caption": "Temp 7 (°C)" },
+        { "type": "SelectVariable", "name": "IndoorHumidity8", "caption": "rF 8 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp8", "caption": "Temp 8 (°C)" },
+        { "type": "SelectVariable", "name": "IndoorHumidity9", "caption": "rF 9 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp9", "caption": "Temp 9 (°C)" },
+        { "type": "SelectVariable", "name": "IndoorHumidity10", "caption": "rF 10 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp10", "caption": "Temp 10 (°C)" }
       ]
     },
 
+    { "type": "Label", "caption": "Außensensoren" },
+    { "type": "SelectVariable", "name": "OutdoorHumidity", "caption": "Außen rF (%)" },
+    { "type": "SelectVariable", "name": "OutdoorTemp", "caption": "Außen Temp (°C)" },
+
     { "type": "Label", "caption": "Nachtabschaltung" },
+    { "type": "CheckBox", "name": "NightEnable", "caption": "Aktiv" },
+    { "type": "NumberSpinner", "name": "NightStartHour", "caption": "Start Stunde", "minimum": 0, "maximum": 23 },
+    { "type": "NumberSpinner", "name": "NightStartMinute", "caption": "Start Minute", "minimum": 0, "maximum": 59 },
+    { "type": "NumberSpinner", "name": "NightEndHour", "caption": "Ende Stunde", "minimum": 0, "maximum": 23 },
+    { "type": "NumberSpinner", "name": "NightEndMinute", "caption": "Ende Minute", "minimum": 0, "maximum": 59 },
 
-    {
-      "type": "CheckBox",
-      "name": "NightEnable",
-      "caption": "Nachtabschaltung aktiv"
-    },
-
-    {
-      "type": "NumberSpinner",
-      "name": "NightStartHour",
-      "caption": "Start Stunde",
-      "minimum": 0,
-      "maximum": 23
-    },
-    {
-      "type": "NumberSpinner",
-      "name": "NightStartMinute",
-      "caption": "Start Minute",
-      "minimum": 0,
-      "maximum": 59
-    },
-
-    {
-      "type": "NumberSpinner",
-      "name": "NightEndHour",
-      "caption": "Ende Stunde",
-      "minimum": 0,
-      "maximum": 23
-    },
-    {
-      "type": "NumberSpinner",
-      "name": "NightEndMinute",
-      "caption": "Ende Minute",
-      "minimum": 0,
-      "maximum": 59
-    },
-
-    {
-      "type": "SelectVariable",
-      "name": "VentilationSetpointID",
-      "caption": "Lüftungs-Stellwert (%)"
-    },
+    { "type": "SelectVariable", "name": "VentilationSetpointID", "caption": "Lüftungsstellwert (%)" },
 
     {
       "type": "Button",
