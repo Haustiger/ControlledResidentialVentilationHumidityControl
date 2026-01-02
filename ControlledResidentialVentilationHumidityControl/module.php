@@ -8,87 +8,96 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     {
         parent::Create();
 
-        $this->RegisterPropertyInteger('IndoorSensorCount', 1);
+        $this->RegisterPropertyInteger('IndoorSensorCount',1);
         for ($i=1;$i<=10;$i++) {
-            $this->RegisterPropertyInteger("IndoorHumidity$i", 0);
-            $this->RegisterPropertyInteger("IndoorTemp$i", 0);
+            $this->RegisterPropertyInteger("IndoorHumidity$i",0);
+            $this->RegisterPropertyInteger("IndoorTemp$i",0);
         }
-        $this->RegisterPropertyInteger('VentilationSetpointID', 0);
+
+        $this->RegisterPropertyBoolean('NightEnable',false);
+        $this->RegisterPropertyInteger('NightStartHour',22);
+        $this->RegisterPropertyInteger('NightStartMinute',0);
+        $this->RegisterPropertyInteger('NightEndHour',6);
+        $this->RegisterPropertyInteger('NightEndMinute',0);
+
+        $this->RegisterPropertyInteger('VentilationSetpointID',0);
 
         if (!IPS_VariableProfileExists('CRV.AbsHumidity')) {
             IPS_CreateVariableProfile('CRV.AbsHumidity', VARIABLETYPE_FLOAT);
-            IPS_SetVariableProfileText('CRV.AbsHumidity','', ' g/m³');
+            IPS_SetVariableProfileText('CRV.AbsHumidity','',' g/m³');
             IPS_SetVariableProfileDigits('CRV.AbsHumidity',2);
         }
 
-        $this->RegisterVariableFloat('IndoorAbs','Absolute Feuchte innen','CRV.AbsHumidity',10);
-        $this->RegisterVariableFloat('IndoorAbsMax','Max. Feuchte innen','CRV.AbsHumidity',11);
-        $this->RegisterVariableFloat('IndoorAbsMin','Min. Feuchte innen','CRV.AbsHumidity',12);
+        $this->RegisterVariableFloat('AbsAvg','Absolute Feuchte Ø','CRV.AbsHumidity',10);
+        $this->RegisterVariableFloat('AbsMax','Absolute Feuchte Max','CRV.AbsHumidity',11);
+        $this->RegisterVariableFloat('AbsMin','Absolute Feuchte Min','CRV.AbsHumidity',12);
 
         $this->RegisterVariableInteger('Stage','Lüftungsstufe','',20);
         $this->RegisterVariableInteger('Setpoint','Stellwert %','~Intensity.100',21);
-
-        $this->RegisterVariableInteger('LastStage','Letzte Stufe','',90);
-        $this->RegisterVariableFloat('LastAbs','Letzte Feuchte','CRV.AbsHumidity',91);
-        $this->RegisterVariableInteger('LastSetpoint','Letzter Stellwert','',92);
 
         $this->RegisterTimer('ControlTimer',300,'IPS_RequestAction($_IPS["TARGET"],"TimerRun",0);');
     }
 
     public function RequestAction($Ident,$Value)
     {
-        if ($Ident==='ManualRun'||$Ident==='TimerRun') $this->Run();
+        if ($Ident==='ManualRun' || $Ident==='TimerRun') {
+            $this->Run();
+        }
     }
 
     private function Run()
     {
-        $absValues=[];
+        if ($this->IsNightBlocked()) return;
+
+        $abs=[];
 
         for ($i=1;$i<=$this->ReadPropertyInteger('IndoorSensorCount');$i++) {
-            $hID=$this->ReadPropertyInteger("IndoorHumidity$i");
-            $tID=$this->ReadPropertyInteger("IndoorTemp$i");
-            if ($hID>0 && $tID>0 && IPS_VariableExists($hID) && IPS_VariableExists($tID)) {
-                $rh=GetValue($hID);
-                if ($rh>100) $rh=$rh/2.55; // DPT5
-                $t=GetValue($tID);
-                $absValues[]=$this->CalcAbsHumidity($t,$rh);
+            $h=$this->ReadPropertyInteger("IndoorHumidity$i");
+            $t=$this->ReadPropertyInteger("IndoorTemp$i");
+            if ($h>0 && $t>0 && IPS_VariableExists($h) && IPS_VariableExists($t)) {
+                $rh=GetValue($h);
+                if ($rh>100) $rh=$rh/2.55;
+                $temp=GetValue($t);
+                $abs[]=$this->CalcAbsHumidity($temp,$rh);
             }
         }
 
-        if (!$absValues) return;
+        if (!$abs) return;
 
-        $avg=array_sum($absValues)/count($absValues);
-        $max=max($absValues);
+        $avg=array_sum($abs)/count($abs);
+        $max=max($abs);
+        $min=min($abs);
 
-        SetValue($this->GetIDForIdent('IndoorAbs'),$avg);
+        SetValue($this->GetIDForIdent('AbsAvg'),$avg);
+        SetValue($this->GetIDForIdent('AbsMax'),$max);
+        SetValue($this->GetIDForIdent('AbsMin'),$min);
 
-        $maxID=$this->GetIDForIdent('IndoorAbsMax');
-        $minID=$this->GetIDForIdent('IndoorAbsMin');
+        if ($avg<6.8) $stage=1;
+        elseif ($avg<7.6) $stage=2;
+        elseif ($avg<8.8) $stage=3;
+        elseif ($avg<10) $stage=4;
+        else $stage=5;
 
-        if (GetValue($maxID)==0||$avg>GetValue($maxID)) SetValue($maxID,$avg);
-        if (GetValue($minID)==0||$avg<GetValue($minID)) SetValue($minID,$avg);
-
-        // Zielstufe
-        if ($avg<6.8) $target=1;
-        elseif ($avg<7.6) $target=2;
-        elseif ($avg<8.8) $target=3;
-        elseif ($avg<10.0) $target=4;
-        else $target=5;
-
-        $lastStage=GetValue($this->GetIDForIdent('LastStage'));
-        if ($target<$lastStage) $target=max($lastStage-1,1);
-
-        SetValue($this->GetIDForIdent('Stage'),$target);
-        $percent=self::STAGES[$target];
+        SetValue($this->GetIDForIdent('Stage'),$stage);
+        $percent=self::STAGES[$stage];
         SetValue($this->GetIDForIdent('Setpoint'),$percent);
 
         $out=$this->ReadPropertyInteger('VentilationSetpointID');
-        if ($out>0 && IPS_VariableExists($out) && $percent!=GetValueInteger($this->GetIDForIdent('LastSetpoint'))) {
+        if ($out>0 && IPS_VariableExists($out)) {
             @RequestAction($out,$percent);
         }
+    }
 
-        SetValue($this->GetIDForIdent('LastStage'),$target);
-        SetValue($this->GetIDForIdent('LastSetpoint'),$percent);
+    private function IsNightBlocked()
+    {
+        if (!$this->ReadPropertyBoolean('NightEnable')) return false;
+
+        $now=(int)date('H')*60+(int)date('i');
+        $start=$this->ReadPropertyInteger('NightStartHour')*60+$this->ReadPropertyInteger('NightStartMinute');
+        $end=$this->ReadPropertyInteger('NightEndHour')*60+$this->ReadPropertyInteger('NightEndMinute');
+
+        if ($start<$end) return ($now>=$start && $now<$end);
+        return ($now>=$start || $now<$end);
     }
 
     private function CalcAbsHumidity($T,$RH)

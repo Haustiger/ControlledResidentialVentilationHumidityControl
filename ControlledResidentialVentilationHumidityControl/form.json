@@ -1,11 +1,11 @@
 {
   "elements": [
-    { "type": "Label", "caption": "Sensoren – relative Feuchte (%) & Temperatur (°C)" },
+    { "type": "Label", "caption": "Innensensoren (relative Feuchte % und Temperatur °C)" },
 
     {
       "type": "NumberSpinner",
       "name": "IndoorSensorCount",
-      "caption": "Anzahl Innensensoren",
+      "caption": "Anzahl aktiver Innensensoren",
       "minimum": 1,
       "maximum": 10
     },
@@ -18,8 +18,70 @@
         { "type": "SelectVariable", "name": "IndoorTemp1", "caption": "Temp Sensor 1 (°C)" },
 
         { "type": "SelectVariable", "name": "IndoorHumidity2", "caption": "rF Sensor 2 (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp2", "caption": "Temp Sensor 2 (°C)" }
+        { "type": "SelectVariable", "name": "IndoorTemp2", "caption": "Temp Sensor 2 (°C)" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity3", "caption": "rF Sensor 3 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp3", "caption": "Temp Sensor 3 (°C)" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity4", "caption": "rF Sensor 4 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp4", "caption": "Temp Sensor 4 (°C)" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity5", "caption": "rF Sensor 5 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp5", "caption": "Temp Sensor 5 (°C)" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity6", "caption": "rF Sensor 6 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp6", "caption": "Temp Sensor 6 (°C)" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity7", "caption": "rF Sensor 7 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp7", "caption": "Temp Sensor 7 (°C)" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity8", "caption": "rF Sensor 8 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp8", "caption": "Temp Sensor 8 (°C)" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity9", "caption": "rF Sensor 9 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp9", "caption": "Temp Sensor 9 (°C)" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity10", "caption": "rF Sensor 10 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp10", "caption": "Temp Sensor 10 (°C)" }
       ]
+    },
+
+    { "type": "Label", "caption": "Nachtabschaltung" },
+
+    {
+      "type": "CheckBox",
+      "name": "NightEnable",
+      "caption": "Nachtabschaltung aktiv"
+    },
+
+    {
+      "type": "NumberSpinner",
+      "name": "NightStartHour",
+      "caption": "Start Stunde",
+      "minimum": 0,
+      "maximum": 23
+    },
+    {
+      "type": "NumberSpinner",
+      "name": "NightStartMinute",
+      "caption": "Start Minute",
+      "minimum": 0,
+      "maximum": 59
+    },
+
+    {
+      "type": "NumberSpinner",
+      "name": "NightEndHour",
+      "caption": "Ende Stunde",
+      "minimum": 0,
+      "maximum": 23
+    },
+    {
+      "type": "NumberSpinner",
+      "name": "NightEndMinute",
+      "caption": "Ende Minute",
+      "minimum": 0,
+      "maximum": 59
     },
 
     {
