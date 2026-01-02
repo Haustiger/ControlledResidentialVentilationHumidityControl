@@ -1,6 +1,7 @@
 {
   "elements": [
-    { "type": "Label", "caption": "Eingänge – Absolute Feuchte (g/m³)" },
+    { "type": "Label", "caption": "Sensoren – relative Feuchte (%) & Temperatur (°C)" },
+
     {
       "type": "NumberSpinner",
       "name": "IndoorSensorCount",
@@ -8,32 +9,25 @@
       "minimum": 1,
       "maximum": 10
     },
+
     {
       "type": "ExpansionPanel",
       "caption": "Innensensoren",
       "items": [
-        { "type": "SelectVariable", "name": "IndoorSensor1", "caption": "Sensor 1" },
-        { "type": "SelectVariable", "name": "IndoorSensor2", "caption": "Sensor 2" },
-        { "type": "SelectVariable", "name": "IndoorSensor3", "caption": "Sensor 3" },
-        { "type": "SelectVariable", "name": "IndoorSensor4", "caption": "Sensor 4" },
-        { "type": "SelectVariable", "name": "IndoorSensor5", "caption": "Sensor 5" },
-        { "type": "SelectVariable", "name": "IndoorSensor6", "caption": "Sensor 6" },
-        { "type": "SelectVariable", "name": "IndoorSensor7", "caption": "Sensor 7" },
-        { "type": "SelectVariable", "name": "IndoorSensor8", "caption": "Sensor 8" },
-        { "type": "SelectVariable", "name": "IndoorSensor9", "caption": "Sensor 9" },
-        { "type": "SelectVariable", "name": "IndoorSensor10", "caption": "Sensor 10" }
+        { "type": "SelectVariable", "name": "IndoorHumidity1", "caption": "rF Sensor 1 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp1", "caption": "Temp Sensor 1 (°C)" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity2", "caption": "rF Sensor 2 (%)" },
+        { "type": "SelectVariable", "name": "IndoorTemp2", "caption": "Temp Sensor 2 (°C)" }
       ]
     },
-    {
-      "type": "SelectVariable",
-      "name": "OutdoorAbsHumidity",
-      "caption": "Außen – absolute Feuchte (g/m³)"
-    },
+
     {
       "type": "SelectVariable",
       "name": "VentilationSetpointID",
       "caption": "Lüftungs-Stellwert (%)"
     },
+
     {
       "type": "Button",
       "caption": "Regelung jetzt ausführen",
