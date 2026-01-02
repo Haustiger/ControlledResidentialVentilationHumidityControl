@@ -2,115 +2,164 @@
 
 class ControlledResidentialVentilationHumidityControl extends IPSModule
 {
-    private const STAGES = [1=>12,2=>24,3=>36,4=>48,5=>60,6=>72,7=>84,8=>96];
-
     public function Create()
     {
         parent::Create();
 
-        $this->RegisterPropertyInteger('IndoorSensorCount',1);
-        for ($i=1;$i<=10;$i++) {
-            $this->RegisterPropertyInteger("IndoorHumidity$i",0);
-            $this->RegisterPropertyInteger("IndoorTemp$i",0);
+        // =========================
+        // Eigenschaften
+        // =========================
+        $this->RegisterPropertyInteger('IndoorSensorCount', 1);
+
+        for ($i = 1; $i <= 10; $i++) {
+            $this->RegisterPropertyInteger('IndoorHumidity' . $i, 0);
+            $this->RegisterPropertyInteger('IndoorTemp' . $i, 0);
         }
 
-        $this->RegisterPropertyInteger('OutdoorHumidity',0);
-        $this->RegisterPropertyInteger('OutdoorTemp',0);
+        $this->RegisterPropertyInteger('OutdoorHumidity', 0);
+        $this->RegisterPropertyInteger('OutdoorTemp', 0);
 
-        $this->RegisterPropertyInteger('VentilationSetpointID',0);
-        $this->RegisterPropertyInteger('VentilationActualID',0);
+        $this->RegisterPropertyInteger('VentilationSetpointID', 0);
+        $this->RegisterPropertyInteger('VentilationActualID', 0);
 
-        if (!IPS_VariableProfileExists('CRV.AbsHumidity')) {
-            IPS_CreateVariableProfile('CRV.AbsHumidity', VARIABLETYPE_FLOAT);
-            IPS_SetVariableProfileText('CRV.AbsHumidity','',' g/m³');
-            IPS_SetVariableProfileDigits('CRV.AbsHumidity',2);
-        }
+        // =========================
+        // Variablen
+        // =========================
+        $this->RegisterVariableFloat('AbsHumidityIndoor', 'Absolute Feuchte innen (Ø)', 'Humidity.Abs', 10);
+        $this->RegisterVariableFloat('AbsHumidityMax24h', 'Absolute Feuchte max. (24h)', 'Humidity.Abs', 20);
+        $this->RegisterVariableFloat('AbsHumidityMin24h', 'Absolute Feuchte min. (24h)', 'Humidity.Abs', 30);
 
-        $this->RegisterVariableFloat('AbsAvg','Absolute Feuchte Ø','CRV.AbsHumidity',10);
-        $this->RegisterVariableFloat('AbsMax24','Max. abs. Feuchte (24h)','CRV.AbsHumidity',11);
-        $this->RegisterVariableFloat('AbsMin24','Min. abs. Feuchte (24h)','CRV.AbsHumidity',12);
-        $this->RegisterVariableFloat('AbsOutdoor','Absolute Feuchte außen','CRV.AbsHumidity',13);
+        $this->RegisterVariableInteger('VentilationLevel', 'Lüftungsstufe (%)', '~Intensity.100', 40);
 
-        $this->RegisterVariableInteger('Stage','Soll-Stufe','',20);
-        $this->RegisterVariableInteger('ActualStage','Ist-Stufe','',21);
+        // Lernstatus
+        $this->RegisterVariableBoolean('LearningActive', 'Selbstlernen aktiv', '~Switch', 50);
 
-        $this->RegisterVariableInteger('LastLearnTime','Letzter Lernzeitpunkt','',90);
-        $this->RegisterVariableFloat('LastLearnAbs','Lern-Feuchte','CRV.AbsHumidity',91);
+        // Zeitstempel intern (Unix)
+        $this->RegisterVariableInteger('LastLearningTS', 'Letzter Lernzeitpunkt (intern)', '', 60);
+        $this->RegisterVariableInteger('HumidityJumpUntilTS', 'Feuchtesprung bis (intern)', '', 70);
 
-        $this->RegisterTimer('ControlTimer',300,'IPS_RequestAction($_IPS["TARGET"],"TimerRun",0);');
+        // Menschlich lesbare Anzeige
+        $this->RegisterVariableString('LastLearningReadable', 'Letzter Lernzeitpunkt', '', 61);
+        $this->RegisterVariableString('HumidityJumpUntilReadable', 'Feuchtesprung bis', '', 71);
+
+        // =========================
+        // Timer
+        // =========================
+        $this->RegisterTimer('ControlTimer', 300000, 'CRV_Run($_IPS["TARGET"]);');
     }
 
-    public function RequestAction($Ident,$Value)
+    public function ApplyChanges()
     {
-        if ($Ident==='ManualRun'||$Ident==='TimerRun') $this->Run();
+        parent::ApplyChanges();
     }
 
-    private function Run()
+    // ==========================================================
+    // Hauptregelung
+    // ==========================================================
+    public function Run()
     {
-        $abs=[];
-        for ($i=1;$i<=$this->ReadPropertyInteger('IndoorSensorCount');$i++) {
-            $h=$this->ReadPropertyInteger("IndoorHumidity$i");
-            $t=$this->ReadPropertyInteger("IndoorTemp$i");
-            if ($h>0 && $t>0 && IPS_VariableExists($h) && IPS_VariableExists($t)) {
-                $rh=GetValue($h); if ($rh>100) $rh/=2.55;
-                $abs[]=$this->CalcAbsHumidity(GetValue($t),$rh);
+        $now = time();
+
+        // --------------------------
+        // Sensoren erfassen
+        // --------------------------
+        $count = $this->ReadPropertyInteger('IndoorSensorCount');
+        $absValues = [];
+
+        for ($i = 1; $i <= $count; $i++) {
+            $hID = $this->ReadPropertyInteger('IndoorHumidity' . $i);
+            $tID = $this->ReadPropertyInteger('IndoorTemp' . $i);
+
+            if ($hID > 0 && $tID > 0 && IPS_VariableExists($hID) && IPS_VariableExists($tID)) {
+                $rh = GetValue($hID);
+                $temp = GetValue($tID);
+
+                $abs = $this->CalcAbsoluteHumidity($temp, $rh);
+                $absValues[] = $abs;
             }
         }
-        if (!$abs) return;
 
-        $avg=array_sum($abs)/count($abs);
-        SetValue($this->GetIDForIdent('AbsAvg'),$avg);
-
-        // 24h Max/Min
-        $now=time();
-        if (!isset($this->data)) $this->data=[];
-        $this->data[$now]=$avg;
-        foreach ($this->data as $t=>$v) if ($now-$t>86400) unset($this->data[$t]);
-
-        SetValue($this->GetIDForIdent('AbsMax24'),max($this->data));
-        SetValue($this->GetIDForIdent('AbsMin24'),min($this->data));
-
-        // Selbstlernen
-        $lastTime=GetValue($this->GetIDForIdent('LastLearnTime'));
-        if ($lastTime>0 && time()-$lastTime>600) {
-            $delta=GetValue($this->GetIDForIdent('LastLearnAbs'))-$avg;
-            if ($delta<0.05) $avg+=0.2; // Lüften wirkungslos → konservativer
+        if (count($absValues) === 0) {
+            return;
         }
 
-        SetValue($this->GetIDForIdent('LastLearnTime'),time());
-        SetValue($this->GetIDForIdent('LastLearnAbs'),$avg);
+        $avg = array_sum($absValues) / count($absValues);
+        $max = max($absValues);
+        $min = min($absValues);
 
-        if ($avg<6.8) $stage=1;
-        elseif ($avg<7.6) $stage=2;
-        elseif ($avg<8.8) $stage=3;
-        elseif ($avg<10) $stage=4;
-        else $stage=5;
+        SetValue($this->GetIDForIdent('AbsHumidityIndoor'), round($avg, 2));
+        SetValue($this->GetIDForIdent('AbsHumidityMax24h'), round($max, 2));
+        SetValue($this->GetIDForIdent('AbsHumidityMin24h'), round($min, 2));
 
-        SetValue($this->GetIDForIdent('Stage'),$stage);
-        $percent=self::STAGES[$stage];
+        // --------------------------
+        // Feuchtesprung
+        // --------------------------
+        $jumpUntil = GetValue($this->GetIDForIdent('HumidityJumpUntilTS'));
 
-        $out=$this->ReadPropertyInteger('VentilationSetpointID');
-        if ($out>0 && IPS_VariableExists($out)) {
-            @RequestAction($out,$percent);
+        if ($max >= ($avg + 1.0)) {
+            $jumpUntil = $now + 3600;
+            SetValue($this->GetIDForIdent('HumidityJumpUntilTS'), $jumpUntil);
         }
 
-        // Ist-Stufe prüfen
-        $act=$this->ReadPropertyInteger('VentilationActualID');
-        if ($act>0 && IPS_VariableExists($act)) {
-            $actual=GetValue($act);
-            $this->SetValue('ActualStage',$this->PercentToStage($actual));
+        // Menschlich lesbar
+        SetValue(
+            $this->GetIDForIdent('HumidityJumpUntilReadable'),
+            $jumpUntil > 0 ? date('d.m.Y H:i:s', $jumpUntil) : '-'
+        );
+
+        // --------------------------
+        // Lernzeitpunkt
+        // --------------------------
+        $lastLearn = GetValue($this->GetIDForIdent('LastLearningTS'));
+
+        if ($lastLearn === 0 || ($now - $lastLearn) > 3600) {
+            SetValue($this->GetIDForIdent('LastLearningTS'), $now);
+            SetValue($this->GetIDForIdent('LearningActive'), true);
+        }
+
+        SetValue(
+            $this->GetIDForIdent('LastLearningReadable'),
+            date('d.m.Y H:i:s', GetValue($this->GetIDForIdent('LastLearningTS')))
+        );
+
+        // --------------------------
+        // Lüftungsstufe bestimmen
+        // --------------------------
+        $percent = $this->MapHumidityToVentilation($avg);
+
+        SetValue($this->GetIDForIdent('VentilationLevel'), $percent);
+
+        $setID = $this->ReadPropertyInteger('VentilationSetpointID');
+        if ($setID > 0 && IPS_VariableExists($setID)) {
+            RequestAction($setID, $percent);
         }
     }
 
-    private function PercentToStage($p)
+    // ==========================================================
+    // Hilfsfunktionen
+    // ==========================================================
+    private function CalcAbsoluteHumidity(float $temp, float $rh): float
     {
-        foreach (self::STAGES as $s=>$v) if ($p<=$v) return $s;
-        return 8;
+        $sdd = 6.1078 * pow(10, (7.5 * $temp) / (237.3 + $temp));
+        $dd = $rh / 100 * $sdd;
+        return round(216.7 * ($dd / (273.15 + $temp)), 2);
     }
 
-    private function CalcAbsHumidity($T,$RH)
+    private function MapHumidityToVentilation(float $abs): int
     {
-        $es=6.112*exp((17.62*$T)/(243.12+$T));
-        return 216.7*($RH/100*$es)/($T+273.15);
+        if ($abs < 7.0) return 12;
+        if ($abs < 8.0) return 24;
+        if ($abs < 9.0) return 36;
+        if ($abs < 10.0) return 48;
+        if ($abs < 11.0) return 60;
+        if ($abs < 12.0) return 72;
+        if ($abs < 13.0) return 84;
+        return 96;
     }
+}
+
+// Wrapper für Timer / Button
+function CRV_Run($id)
+{
+    IPS_RequestAction($id, 'Run', 0);
 }
