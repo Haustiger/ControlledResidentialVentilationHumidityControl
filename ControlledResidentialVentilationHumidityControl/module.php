@@ -6,6 +6,7 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     {
         parent::Create();
 
+        // Grundeinstellungen
         $this->RegisterPropertyInteger('IndoorSensorCount', 1);
 
         for ($i = 1; $i <= 10; $i++) {
@@ -15,18 +16,11 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
         $this->RegisterPropertyInteger('VentilationSetpointID', 0);
 
-        // Profile
-        if (!IPS_VariableProfileExists('CRV_HumidityAbs')) {
-            IPS_CreateVariableProfile('CRV_HumidityAbs', VARIABLETYPE_FLOAT);
-            IPS_SetVariableProfileText('CRV_HumidityAbs', '', ' g/m³');
-            IPS_SetVariableProfileDigits('CRV_HumidityAbs', 2);
-        }
-
-        // Variables
+        // Variablen (noch ohne Logik)
         $this->RegisterVariableFloat(
             'AbsHumidityIndoor',
-            'Absolute Feuchte innen',
-            'CRV_HumidityAbs',
+            'Absolute Feuchte innen (Ø)',
+            '',
             10
         );
 
@@ -37,10 +31,10 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
             20
         );
 
-        // Timer (5 Minuten)
+        // Timer (deaktiviert bis ApplyChanges)
         $this->RegisterTimer(
             'ControlTimer',
-            300000,
+            0,
             'IPS_RequestAction($_IPS["TARGET"], "Run", 0);'
         );
     }
@@ -48,6 +42,9 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     public function ApplyChanges()
     {
         parent::ApplyChanges();
+
+        // Timer auf 5 Minuten aktivieren
+        $this->SetTimerInterval('ControlTimer', 300000);
     }
 
     public function RequestAction($Ident, $Value)
@@ -59,52 +56,7 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
     public function Run()
     {
-        $count = $this->ReadPropertyInteger('IndoorSensorCount');
-        $values = [];
-
-        for ($i = 1; $i <= $count; $i++) {
-            $h = $this->ReadPropertyInteger("IndoorHumidity$i");
-            $t = $this->ReadPropertyInteger("IndoorTemperature$i");
-
-            if ($h > 0 && $t > 0 && IPS_VariableExists($h) && IPS_VariableExists($t)) {
-                $values[] = $this->calcAbsHumidity(
-                    GetValue($t),
-                    GetValue($h)
-                );
-            }
-        }
-
-        if (count($values) === 0) {
-            return;
-        }
-
-        $avg = array_sum($values) / count($values);
-        SetValue($this->GetIDForIdent('AbsHumidityIndoor'), $avg);
-
-        $percent = $this->mapToStage($avg);
-        SetValue($this->GetIDForIdent('VentilationPercent'), $percent);
-
-        $target = $this->ReadPropertyInteger('VentilationSetpointID');
-        if ($target > 0 && IPS_VariableExists($target)) {
-            RequestAction($target, $percent);
-        }
-    }
-
-    private function calcAbsHumidity(float $temp, float $rh): float
-    {
-        $sdd = 6.1078 * pow(10, (7.5 * $temp) / (237.3 + $temp));
-        return round((216.7 * ($rh / 100 * $sdd)) / (273.15 + $temp), 2);
-    }
-
-    private function mapToStage(float $h): int
-    {
-        if ($h < 7.0) return 12;
-        if ($h < 8.0) return 25;
-        if ($h < 9.0) return 37;
-        if ($h < 10.0) return 50;
-        if ($h < 11.0) return 62;
-        if ($h < 12.0) return 75;
-        if ($h < 13.0) return 87;
-        return 100;
+        // Platzhalter – Logik kommt in Build 19+
+        IPS_LogMessage('CRVHC', 'Regelung ausgeführt (Build 18)');
     }
 }
