@@ -3,7 +3,9 @@
   "name": "Controlled Residential Ventilation Humidity Control",
   "type": 3,
   "vendor": "",
-  "aliases": ["CRV Humidity Control"],
+  "aliases": [
+    "CRV Humidity Control"
+  ],
   "parentRequirements": [],
   "childRequirements": [],
   "implemented": [],

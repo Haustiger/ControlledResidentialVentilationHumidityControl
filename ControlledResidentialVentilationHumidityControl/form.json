@@ -1,99 +1,21 @@
 {
   "elements": [
-
-    {
-      "type": "Label",
-      "caption": "Allgemeine Einstellungen"
-    },
     {
       "type": "NumberSpinner",
       "name": "IndoorSensorCount",
-      "caption": "Anzahl verwendeter Innensensoren",
+      "caption": "Anzahl Innensensoren",
       "minimum": 1,
       "maximum": 10
-    },
-
-    {
-      "type": "Label",
-      "caption": "Innensensoren (Relative Feuchte + Temperatur)"
-    },
-
-    {
-      "type": "ExpansionPanel",
-      "caption": "Innensensoren 1–5",
-      "items": [
-        { "type": "SelectVariable", "name": "IndoorHumidity1", "caption": "Sensor 1 – rF (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp1",     "caption": "Sensor 1 – Temperatur (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity2", "caption": "Sensor 2 – rF (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp2",     "caption": "Sensor 2 – Temperatur (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity3", "caption": "Sensor 3 – rF (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp3",     "caption": "Sensor 3 – Temperatur (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity4", "caption": "Sensor 4 – rF (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp4",     "caption": "Sensor 4 – Temperatur (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity5", "caption": "Sensor 5 – rF (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp5",     "caption": "Sensor 5 – Temperatur (°C)" }
-      ]
-    },
-
-    {
-      "type": "ExpansionPanel",
-      "caption": "Innensensoren 6–10",
-      "items": [
-        { "type": "SelectVariable", "name": "IndoorHumidity6", "caption": "Sensor 6 – rF (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp6",     "caption": "Sensor 6 – Temperatur (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity7", "caption": "Sensor 7 – rF (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp7",     "caption": "Sensor 7 – Temperatur (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity8", "caption": "Sensor 8 – rF (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp8",     "caption": "Sensor 8 – Temperatur (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity9", "caption": "Sensor 9 – rF (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp9",     "caption": "Sensor 9 – Temperatur (°C)" },
-
-        { "type": "SelectVariable", "name": "IndoorHumidity10", "caption": "Sensor 10 – rF (%)" },
-        { "type": "SelectVariable", "name": "IndoorTemp10",     "caption": "Sensor 10 – Temperatur (°C)" }
-      ]
-    },
-
-    {
-      "type": "Label",
-      "caption": "Außenluft"
-    },
-    {
-      "type": "SelectVariable",
-      "name": "OutdoorHumidity",
-      "caption": "Außen – Relative Feuchte (%)"
-    },
-    {
-      "type": "SelectVariable",
-      "name": "OutdoorTemp",
-      "caption": "Außen – Temperatur (°C)"
-    },
-
-    {
-      "type": "Label",
-      "caption": "Lüftungsanlage"
     },
     {
       "type": "SelectVariable",
       "name": "VentilationSetpointID",
-      "caption": "Soll-Lüftungsstufe (%)"
+      "caption": "Lüftungsstellwert (%)"
     },
-    {
-      "type": "SelectVariable",
-      "name": "VentilationActualID",
-      "caption": "Ist-Lüftungsstufe (%)"
-    },
-
     {
       "type": "Button",
-      "label": "Regelung jetzt ausführen",
-      "onClick": "IPS_RequestAction($id, 'ManualRun', 1);"
+      "caption": "Regelung jetzt ausführen",
+      "onClick": "IPS_RequestAction($id, 'Run', 1);"
     }
   ]
 }

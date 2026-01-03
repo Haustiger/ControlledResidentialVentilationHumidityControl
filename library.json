@@ -1,9 +1,9 @@
 {
-  "id": "{9F7C7B41-7F3C-4F52-9A9E-CRVHC0000001}",
+  "id": "{A1F5E4A3-7C5D-4C0C-9E11-CRVHC0000001}",
+  "author": "ChatGPT",
   "name": "Controlled Residential Ventilation",
-  "author": "Custom",
   "url": "",
-  "version": "3.1",
+  "version": "3.0",
   "build": 17,
   "date": 0
 }
