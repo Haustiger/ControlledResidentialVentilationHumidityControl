@@ -10,12 +10,3 @@ Neu:
 Noch NICHT enthalten:
 - Nachtabschaltung
 - Selbstlernende Regelung
-
-
-
-Ergänzung Build 6:
-
-✔ Deine Einschätzung war fachlich absolut richtig
-✔ Build 6 setzt das regelungstechnisch sauber um
-✔ Keine Funktionen entfernt
-✔ Stabiler Übergang für spätere Erweiterungen

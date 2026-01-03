@@ -6,149 +6,187 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     {
         parent::Create();
 
-        $this->RegisterPropertyInteger("IndoorSensorCount", 1);
+        /* ================= Eigenschaften ================= */
+
+        $this->RegisterPropertyInteger('IndoorSensorCount', 1);
 
         for ($i = 1; $i <= 10; $i++) {
             $this->RegisterPropertyInteger("IndoorHumidity$i", 0);
             $this->RegisterPropertyInteger("IndoorTemperature$i", 0);
         }
 
-        $this->RegisterPropertyInteger("OutdoorHumidity", 0);
-        $this->RegisterPropertyInteger("OutdoorTemperature", 0);
+        $this->RegisterPropertyInteger('OutdoorHumidity', 0);
+        $this->RegisterPropertyInteger('OutdoorTemperature', 0);
 
-        $this->RegisterPropertyInteger("VentilationSetpointID", 0);
+        $this->RegisterPropertyInteger('VentilationSetpointID', 0);
 
-        $this->RegisterPropertyFloat("HumidityJumpThreshold", 10.0);
+        // Feuchtesprung
+        $this->RegisterPropertyFloat('HumidityJumpThreshold', 10.0);
 
-        $this->RegisterTimer("ControlTimer", 300000, "CRVHC_Run($_IPS['TARGET']);");
+        /* ================= Variablen ================= */
 
-        // Status / Debug
-        $this->RegisterVariableFloat("AbsHumidityAvg", "Absolute Feuchte innen Ø (g/m³)");
-        $this->RegisterVariableFloat("AbsHumidityMin", "Absolute Feuchte innen Min 24h (g/m³)");
-        $this->RegisterVariableFloat("AbsHumidityMax", "Absolute Feuchte innen Max 24h (g/m³)");
+        $this->RegisterVariableFloat('AbsHumidityIndoorAvg', 'Absolute Feuchte innen Ø (g/m³)', '', 10);
+        $this->RegisterVariableFloat('AbsHumidityIndoorMin24h', 'Absolute Feuchte innen MIN 24h (g/m³)', '', 20);
+        $this->RegisterVariableFloat('AbsHumidityIndoorMax24h', 'Absolute Feuchte innen MAX 24h (g/m³)', '', 30);
+        $this->RegisterVariableFloat('AbsHumidityOutdoor', 'Absolute Feuchte außen (g/m³)', '', 40);
 
-        $this->RegisterVariableInteger("CurrentStage", "Aktuelle Lüftungsstufe");
-        $this->RegisterVariableInteger("TargetStage", "Ziel-Lüftungsstufe");
+        $this->RegisterVariableInteger('VentilationStage', 'Lüftungsstufe', '', 50);
+        $this->RegisterVariableFloat('VentilationSetpointPercent', 'Lüftungs-Stellwert (%)', '', 60);
 
-        $this->RegisterVariableString("LastHumidityJump", "Letzter Feuchtesprung");
-        $this->RegisterVariableString("Debug", "Debug Status");
+        $this->RegisterVariableString('LastCalcTime', 'Letzte Regelung', '', 70);
 
-        $this->EnableAction("Run");
+        /* -------- Feuchtesprung Debug -------- */
+
+        $this->RegisterVariableBoolean('HumidityJumpActive', 'Feuchtesprung aktiv', '', 80);
+        $this->RegisterVariableString('HumidityJumpDetectedAt', 'Letzter Feuchtesprung', '', 81);
+        $this->RegisterVariableString('HumidityJumpUntil', 'Feuchtesprung aktiv bis', '', 82);
+        $this->RegisterVariableFloat('HumidityJumpDelta', 'Feuchtesprung Δ rF (%)', '', 83);
+        $this->RegisterVariableFloat('HumidityJumpThresholdUsed', 'Feuchtesprung Schwellwert (%)', '', 84);
+
+        $this->RegisterVariableFloat('LastAvgRelHumidity', 'Ø rel. Feuchte vor 5 Min (%)', '', 90);
+
+        /* ================= Timer ================= */
+
+        $this->RegisterTimer(
+            'ControlTimer',
+            300000,
+            'IPS_RequestAction($_IPS["TARGET"], "Run", 0);'
+        );
     }
 
     public function RequestAction($Ident, $Value)
     {
-        if ($Ident === "Run") {
+        if ($Ident === 'Run') {
             $this->Run();
         }
     }
 
+    /* =================================================== */
+
     public function Run()
     {
-        $sensorCount = $this->ReadPropertyInteger("IndoorSensorCount");
-        $absValues = [];
+        $count = $this->ReadPropertyInteger('IndoorSensorCount');
 
-        for ($i = 1; $i <= $sensorCount; $i++) {
+        $absIndoor = [];
+        $relIndoor = [];
+
+        for ($i = 1; $i <= $count; $i++) {
             $hID = $this->ReadPropertyInteger("IndoorHumidity$i");
             $tID = $this->ReadPropertyInteger("IndoorTemperature$i");
 
             if ($hID > 0 && $tID > 0 &&
-                IPS_VariableExists($hID) && IPS_VariableExists($tID)) {
+                IPS_VariableExists($hID) &&
+                IPS_VariableExists($tID)
+            ) {
+                $rh = floatval(GetValue($hID));
+                $temp = floatval(GetValue($tID));
 
-                $rh = GetValue($hID);
-                $temp = GetValue($tID);
+                if ($rh > 1) {
+                    $rh = $rh / 100.0;
+                }
 
-                $absValues[] = $this->CalcAbsHumidity($temp, $rh);
+                $relIndoor[] = $rh * 100;
+                $absIndoor[] = $this->CalcAbsoluteHumidity($temp, $rh);
             }
         }
 
-        if (count($absValues) == 0) {
-            $this->LogMessage("Keine gültigen Sensoren", KL_WARNING);
+        if (count($absIndoor) === 0) {
             return;
         }
 
-        $avg = array_sum($absValues) / count($absValues);
-        SetValue($this->GetIDForIdent("AbsHumidityAvg"), round($avg, 2));
+        $avgAbs = round(array_sum($absIndoor) / count($absIndoor), 2);
+        $avgRel = round(array_sum($relIndoor) / count($relIndoor), 2);
 
-        $this->UpdateMinMax($avg);
+        SetValue($this->GetIDForIdent('AbsHumidityIndoorAvg'), $avgAbs);
+        $this->UpdateMinMax24h($avgAbs);
 
-        $targetStage = $this->DetermineStage($avg);
-        $currentStage = GetValue($this->GetIDForIdent("CurrentStage"));
+        /* ===== Feuchtesprung ===== */
 
-        // Feuchtesprung-Erkennung
-        $jumpThreshold = $this->ReadPropertyFloat("HumidityJumpThreshold");
+        $lastRel = GetValue($this->GetIDForIdent('LastAvgRelHumidity'));
+        $delta = round($avgRel - $lastRel, 2);
+        $threshold = $this->ReadPropertyFloat('HumidityJumpThreshold');
 
-        if ($this->DetectHumidityJump($jumpThreshold)) {
-            $targetStage = min(8, $currentStage + 3);
-            SetValue($this->GetIDForIdent("LastHumidityJump"), date("d.m.Y H:i:s"));
-            $this->SendDebug("Feuchtesprung", "Zielstufe $targetStage", 0);
+        SetValue($this->GetIDForIdent('HumidityJumpDelta'), $delta);
+        SetValue($this->GetIDForIdent('HumidityJumpThresholdUsed'), $threshold);
+
+        $now = time();
+
+        if ($delta >= $threshold) {
+            SetValue($this->GetIDForIdent('HumidityJumpActive'), true);
+            SetValue($this->GetIDForIdent('HumidityJumpDetectedAt'), date('d.m.Y H:i:s', $now));
+            SetValue($this->GetIDForIdent('HumidityJumpUntil'), date('d.m.Y H:i:s', $now + 900));
         }
 
-        // Rampenlogik: max +1 Stufe
-        if ($targetStage > $currentStage) {
-            $currentStage++;
-        } elseif ($targetStage < $currentStage) {
-            $currentStage--;
+        $jumpActiveUntil = strtotime(GetValue($this->GetIDForIdent('HumidityJumpUntil')));
+        $jumpActive = GetValue($this->GetIDForIdent('HumidityJumpActive'));
+
+        if ($jumpActive && $now > $jumpActiveUntil) {
+            SetValue($this->GetIDForIdent('HumidityJumpActive'), false);
         }
 
-        SetValue($this->GetIDForIdent("CurrentStage"), $currentStage);
-        SetValue($this->GetIDForIdent("TargetStage"), $targetStage);
+        SetValue($this->GetIDForIdent('LastAvgRelHumidity'), $avgRel);
 
-        $percent = $currentStage * 12;
-        $outID = $this->ReadPropertyInteger("VentilationSetpointID");
+        /* ===== Lüftungsstufe ===== */
 
-        if ($outID > 0 && IPS_VariableExists($outID)) {
-            RequestAction($outID, $percent);
+        $stage = $this->DetermineStage($avgAbs, 0);
+
+        if (GetValue($this->GetIDForIdent('HumidityJumpActive'))) {
+            $stage = min(8, $stage + 3);
         }
 
-        IPS_LogMessage("CRVHC", "Build 6: Regelung ausgeführt – Stufe $currentStage ($percent %)");
+        $percent = $this->StageToPercent($stage);
+
+        SetValue($this->GetIDForIdent('VentilationStage'), $stage);
+        SetValue($this->GetIDForIdent('VentilationSetpointPercent'), $percent);
+        SetValue($this->GetIDForIdent('LastCalcTime'), date('d.m.Y H:i:s'));
+
+        $targetID = $this->ReadPropertyInteger('VentilationSetpointID');
+        if ($targetID > 0 && IPS_VariableExists($targetID)) {
+            @RequestAction($targetID, $percent);
+        }
+
+        IPS_LogMessage(
+            'CRVHC',
+            'Build 5: Regelung -> Stufe ' . $stage . ' (' . $percent . '%)'
+        );
     }
 
-    private function CalcAbsHumidity($temp, $rh)
-    {
-        $sdd = 6.112 * exp((17.62 * $temp) / (243.12 + $temp));
-        $dd = $rh / 100 * $sdd;
-        return 216.7 * ($dd / (273.15 + $temp));
-    }
+    /* =================================================== */
 
-    private function DetermineStage($abs)
+    private function DetermineStage(float $absIndoor): int
     {
-        if ($abs < 6.5) return 1;
-        if ($abs < 7.0) return 2;
-        if ($abs < 7.5) return 3;
-        if ($abs < 8.0) return 4;
-        if ($abs < 8.5) return 5;
-        if ($abs < 9.0) return 6;
-        if ($abs < 9.5) return 7;
+        if ($absIndoor < 6.5) return 1;
+        if ($absIndoor < 7.0) return 2;
+        if ($absIndoor < 7.5) return 3;
+        if ($absIndoor < 8.0) return 4;
+        if ($absIndoor < 8.5) return 5;
+        if ($absIndoor < 9.0) return 6;
+        if ($absIndoor < 9.5) return 7;
         return 8;
     }
 
-    private function DetectHumidityJump($threshold)
+    private function StageToPercent(int $stage): int
     {
-        static $lastAvg = null;
-
-        $current = GetValue($this->GetIDForIdent("AbsHumidityAvg"));
-        if ($lastAvg === null) {
-            $lastAvg = $current;
-            return false;
-        }
-
-        $delta = $current - $lastAvg;
-        $lastAvg = $current;
-
-        return ($delta >= ($threshold / 10));
+        return $stage * 12;
     }
 
-    private function UpdateMinMax($value)
+    private function UpdateMinMax24h(float $value)
     {
-        $minID = $this->GetIDForIdent("AbsHumidityMin");
-        $maxID = $this->GetIDForIdent("AbsHumidityMax");
+        $minID = $this->GetIDForIdent('AbsHumidityIndoorMin24h');
+        $maxID = $this->GetIDForIdent('AbsHumidityIndoorMax24h');
 
         if (GetValue($minID) == 0 || $value < GetValue($minID)) {
-            SetValue($minID, round($value, 2));
+            SetValue($minID, $value);
         }
         if ($value > GetValue($maxID)) {
-            SetValue($maxID, round($value, 2));
+            SetValue($maxID, $value);
         }
+    }
+
+    private function CalcAbsoluteHumidity(float $tempC, float $relHum): float
+    {
+        $sat = 6.112 * exp((17.62 * $tempC) / (243.12 + $tempC));
+        $vap = $sat * $relHum;
+        return (216.7 * $vap) / (273.15 + $tempC);
     }
 }
