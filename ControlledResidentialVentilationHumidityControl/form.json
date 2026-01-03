@@ -125,6 +125,12 @@
     },
 
     {
+      "type": "SelectVariable",
+      "name": "VentilationSetpointID",
+      "caption": "Stellwert-Variable Lüftung (%)"
+    },
+
+    {
       "type": "Button",
       "caption": "Regelung jetzt ausführen",
       "onClick": "IPS_RequestAction($id, 'Run', 1);"
