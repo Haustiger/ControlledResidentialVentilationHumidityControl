@@ -6,7 +6,6 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     {
         parent::Create();
 
-        // Eigenschaften
         $this->RegisterPropertyInteger('IndoorSensorCount', 1);
 
         for ($i = 1; $i <= 10; $i++) {
@@ -16,7 +15,6 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
         $this->RegisterPropertyInteger('VentilationSetpointID', 0);
 
-        // Variablen (noch ohne komplexe Logik)
         $this->RegisterVariableFloat(
             'AbsHumidityIndoor',
             'Absolute Feuchte innen (Ø)',
@@ -31,7 +29,6 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
             20
         );
 
-        // Timer (Intervall wird in ApplyChanges gesetzt)
         $this->RegisterTimer(
             'ControlTimer',
             0,
@@ -42,8 +39,6 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-
-        // Regelzyklus: 5 Minuten
         $this->SetTimerInterval('ControlTimer', 300000);
     }
 
@@ -56,7 +51,6 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
     public function Run()
     {
-        // Noch bewusst minimal
         IPS_LogMessage(
             'CRVHC',
             'Regelung ausgeführt (Version 3.2 / Build 19)'
