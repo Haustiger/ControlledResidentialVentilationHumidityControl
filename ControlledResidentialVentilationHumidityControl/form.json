@@ -10,7 +10,7 @@
 
     {
       "type": "ExpansionPanel",
-      "caption": "Innensensoren",
+      "caption": "Innensensoren (Feuchte + Temperatur)",
       "items": [
         {
           "type": "SelectVariable",
@@ -65,14 +65,63 @@
           "type": "SelectVariable",
           "name": "IndoorTemperature5",
           "caption": "Sensor 5 – Temperatur"
+        },
+
+        {
+          "type": "SelectVariable",
+          "name": "IndoorHumidity6",
+          "caption": "Sensor 6 – relative Feuchte"
+        },
+        {
+          "type": "SelectVariable",
+          "name": "IndoorTemperature6",
+          "caption": "Sensor 6 – Temperatur"
+        },
+
+        {
+          "type": "SelectVariable",
+          "name": "IndoorHumidity7",
+          "caption": "Sensor 7 – relative Feuchte"
+        },
+        {
+          "type": "SelectVariable",
+          "name": "IndoorTemperature7",
+          "caption": "Sensor 7 – Temperatur"
+        },
+
+        {
+          "type": "SelectVariable",
+          "name": "IndoorHumidity8",
+          "caption": "Sensor 8 – relative Feuchte"
+        },
+        {
+          "type": "SelectVariable",
+          "name": "IndoorTemperature8",
+          "caption": "Sensor 8 – Temperatur"
+        },
+
+        {
+          "type": "SelectVariable",
+          "name": "IndoorHumidity9",
+          "caption": "Sensor 9 – relative Feuchte"
+        },
+        {
+          "type": "SelectVariable",
+          "name": "IndoorTemperature9",
+          "caption": "Sensor 9 – Temperatur"
+        },
+
+        {
+          "type": "SelectVariable",
+          "name": "IndoorHumidity10",
+          "caption": "Sensor 10 – relative Feuchte"
+        },
+        {
+          "type": "SelectVariable",
+          "name": "IndoorTemperature10",
+          "caption": "Sensor 10 – Temperatur"
         }
       ]
-    },
-
-    {
-      "type": "SelectVariable",
-      "name": "VentilationSetpointID",
-      "caption": "Lüftungsstellwert (%)"
     },
 
     {

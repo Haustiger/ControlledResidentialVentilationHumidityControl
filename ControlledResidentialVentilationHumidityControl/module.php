@@ -6,27 +6,43 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     {
         parent::Create();
 
-        // Anzahl Sensoren
         $this->RegisterPropertyInteger('IndoorSensorCount', 1);
 
-        // Sensor-Properties
         for ($i = 1; $i <= 10; $i++) {
             $this->RegisterPropertyInteger("IndoorHumidity$i", 0);
             $this->RegisterPropertyInteger("IndoorTemperature$i", 0);
         }
 
-        // Stellwert
         $this->RegisterPropertyInteger('VentilationSetpointID', 0);
 
-        // Variablen
         $this->RegisterVariableFloat(
             'AbsHumidityIndoorAvg',
-            'Absolute Feuchte innen (Ø)',
+            'Absolute Feuchte innen Ø (g/m³)',
             '',
             10
         );
 
-        // Timer
+        $this->RegisterVariableFloat(
+            'AbsHumidityIndoorMin24h',
+            'Absolute Feuchte innen MIN (24h)',
+            '',
+            20
+        );
+
+        $this->RegisterVariableFloat(
+            'AbsHumidityIndoorMax24h',
+            'Absolute Feuchte innen MAX (24h)',
+            '',
+            30
+        );
+
+        $this->RegisterVariableInteger(
+            'LastCalcTimestamp',
+            'Letzte Berechnung',
+            '~UnixTimestamp',
+            40
+        );
+
         $this->RegisterTimer(
             'ControlTimer',
             0,
@@ -37,8 +53,6 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-
-        // alle 5 Minuten
         $this->SetTimerInterval('ControlTimer', 300000);
     }
 
@@ -52,7 +66,6 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     public function Run()
     {
         $count = $this->ReadPropertyInteger('IndoorSensorCount');
-
         $absValues = [];
 
         for ($i = 1; $i <= $count; $i++) {
@@ -66,27 +79,48 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
                 $rh = floatval(GetValue($hID));
                 $temp = floatval(GetValue($tID));
 
-                // relative Feuchte zulässig:
-                // - 0..100 %
-                // - KNX DPT5 (0..255) → wird automatisch skaliert
+                // KNX DPT5 (0..255) oder Prozent
                 if ($rh > 1) {
                     $rh = $rh / 100.0;
                 }
 
-                $abs = $this->CalcAbsoluteHumidity($temp, $rh);
-                $absValues[] = $abs;
+                $absValues[] = $this->CalcAbsoluteHumidity($temp, $rh);
             }
         }
 
-        if (count($absValues) > 0) {
-            $avg = array_sum($absValues) / count($absValues);
-            SetValue($this->GetIDForIdent('AbsHumidityIndoorAvg'), round($avg, 2));
+        if (count($absValues) === 0) {
+            return;
         }
 
-        IPS_LogMessage('CRVHC', 'Build 1: Regelung ausgeführt');
+        $avg = array_sum($absValues) / count($absValues);
+        $avg = round($avg, 2);
+
+        SetValue($this->GetIDForIdent('AbsHumidityIndoorAvg'), $avg);
+        SetValue($this->GetIDForIdent('LastCalcTimestamp'), time());
+
+        $this->UpdateMinMax24h($avg);
+
+        IPS_LogMessage('CRVHC', 'Build 2: Regelung ausgeführt');
     }
 
-    // physikalisch korrekte absolute Feuchte g/m³
+    private function UpdateMinMax24h(float $value)
+    {
+        $now = time();
+        $minID = $this->GetIDForIdent('AbsHumidityIndoorMin24h');
+        $maxID = $this->GetIDForIdent('AbsHumidityIndoorMax24h');
+
+        $min = GetValue($minID);
+        $max = GetValue($maxID);
+
+        if ($min == 0 || $value < $min) {
+            SetValue($minID, $value);
+        }
+
+        if ($value > $max) {
+            SetValue($maxID, $value);
+        }
+    }
+
     private function CalcAbsoluteHumidity(float $tempC, float $relHum): float
     {
         $sat = 6.112 * exp((17.62 * $tempC) / (243.12 + $tempC));
