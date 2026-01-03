@@ -7,11 +7,74 @@
       "minimum": 1,
       "maximum": 10
     },
+
+    {
+      "type": "ExpansionPanel",
+      "caption": "Innensensoren",
+      "items": [
+        {
+          "type": "SelectVariable",
+          "name": "IndoorHumidity1",
+          "caption": "Sensor 1 – relative Feuchte"
+        },
+        {
+          "type": "SelectVariable",
+          "name": "IndoorTemperature1",
+          "caption": "Sensor 1 – Temperatur"
+        },
+
+        {
+          "type": "SelectVariable",
+          "name": "IndoorHumidity2",
+          "caption": "Sensor 2 – relative Feuchte"
+        },
+        {
+          "type": "SelectVariable",
+          "name": "IndoorTemperature2",
+          "caption": "Sensor 2 – Temperatur"
+        },
+
+        {
+          "type": "SelectVariable",
+          "name": "IndoorHumidity3",
+          "caption": "Sensor 3 – relative Feuchte"
+        },
+        {
+          "type": "SelectVariable",
+          "name": "IndoorTemperature3",
+          "caption": "Sensor 3 – Temperatur"
+        },
+
+        {
+          "type": "SelectVariable",
+          "name": "IndoorHumidity4",
+          "caption": "Sensor 4 – relative Feuchte"
+        },
+        {
+          "type": "SelectVariable",
+          "name": "IndoorTemperature4",
+          "caption": "Sensor 4 – Temperatur"
+        },
+
+        {
+          "type": "SelectVariable",
+          "name": "IndoorHumidity5",
+          "caption": "Sensor 5 – relative Feuchte"
+        },
+        {
+          "type": "SelectVariable",
+          "name": "IndoorTemperature5",
+          "caption": "Sensor 5 – Temperatur"
+        }
+      ]
+    },
+
     {
       "type": "SelectVariable",
       "name": "VentilationSetpointID",
       "caption": "Lüftungsstellwert (%)"
     },
+
     {
       "type": "Button",
       "caption": "Regelung jetzt ausführen",
