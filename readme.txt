@@ -1,27 +1,12 @@
-Controlled Residential Ventilation – Humidity Control
-Version 3.2 | Build 4
-Author / Hersteller: Haustiger
+Version 3.2 – Build 5
+Hersteller / Author: Haustiger
 
-Build 4:
-- Außentemperatur & Außenfeuchte
-- absolute Feuchte außen
-- 8-stufige Lüftungskennlinie (12–96 %)
+Neu:
+- Feuchtesprung-Erkennung (Standard +10 % rF / 5 Min)
+- +3 Lüftungsstufen Override
+- Debug-Variablen mit Datum & Uhrzeit
+- vollständig rückbaubar
 
-Lüftungsstufen:
-1 = 12 %
-2 = 24 %
-3 = 36 %
-4 = 48 %
-5 = 60 %
-6 = 72 %
-7 = 84 %
-8 = 96 %
-
-Die Außenfeuchte wird aktuell nur beobachtend genutzt.
-Keine Sommer/Winter-Sperre.
-
-Feuchtesprung:
-NICHT enthalten (kommt in Build 5).
-
-Nächster Schritt:
-Build 5 – Feuchtesprung-Logik + Override
+Noch NICHT enthalten:
+- Nachtabschaltung
+- Selbstlernende Regelung
