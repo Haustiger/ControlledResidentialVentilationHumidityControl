@@ -92,8 +92,8 @@
 
     {
       "type": "Button",
-      "caption": "Regelung jetzt ausführen",
-      "onClick": "IPS_RequestAction($id, \"ManualRun\", 1);"
+      "label": "Regelung jetzt ausführen",
+      "onClick": "IPS_RequestAction($id, 'ManualRun', 1);"
     }
   ]
 }

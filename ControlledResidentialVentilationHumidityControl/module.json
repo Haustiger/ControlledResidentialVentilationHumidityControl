@@ -1,8 +1,8 @@
 {
-  "id": "{A1C0E5F0-8D1F-4E2B-9C8B-CRVHC0000002}",
-  "name": "ControlledResidentialVentilationHumidityControl",
+  "id": "{A1F5E4A3-7C5D-4C0C-9E11-CRVHC0000002}",
+  "name": "Controlled Residential Ventilation Humidity Control",
   "type": 3,
-  "vendor": "Custom",
+  "vendor": "",
   "aliases": ["CRV Humidity Control"],
   "parentRequirements": [],
   "childRequirements": [],
