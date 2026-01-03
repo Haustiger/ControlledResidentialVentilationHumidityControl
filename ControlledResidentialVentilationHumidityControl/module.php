@@ -2,6 +2,9 @@
 
 class ControlledResidentialVentilationHumidityControl extends IPSModule
 {
+    // ==========================================================
+    // Create
+    // ==========================================================
     public function Create()
     {
         parent::Create();
@@ -35,21 +38,71 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
         // =========================
         // Variablen
         // =========================
-        $this->RegisterVariableFloat('AbsHumidityIndoor', 'Absolute Feuchte innen (Ø)', 'CRV_HumidityAbs', 10);
-        $this->RegisterVariableFloat('AbsHumidityMax24h', 'Absolute Feuchte max. (24h)', 'CRV_HumidityAbs', 20);
-        $this->RegisterVariableFloat('AbsHumidityMin24h', 'Absolute Feuchte min. (24h)', 'CRV_HumidityAbs', 30);
+        $this->RegisterVariableFloat(
+            'AbsHumidityIndoor',
+            'Absolute Feuchte innen (Ø)',
+            'CRV_HumidityAbs',
+            10
+        );
 
-        $this->RegisterVariableInteger('VentilationLevel', 'Lüftungsstufe (%)', '~Intensity.100', 40);
-        $this->RegisterVariableBoolean('LearningActive', 'Selbstlernen aktiv', '~Switch', 50);
+        $this->RegisterVariableFloat(
+            'AbsHumidityMax24h',
+            'Absolute Feuchte max. (24h)',
+            'CRV_HumidityAbs',
+            20
+        );
 
-        $this->RegisterVariableInteger('LastLearningTS', 'Letzter Lernzeitpunkt (intern)', '', 60);
-        $this->RegisterVariableInteger('HumidityJumpUntilTS', 'Feuchtesprung bis (intern)', '', 70);
+        $this->RegisterVariableFloat(
+            'AbsHumidityMin24h',
+            'Absolute Feuchte min. (24h)',
+            'CRV_HumidityAbs',
+            30
+        );
 
-        $this->RegisterVariableString('LastLearningReadable', 'Letzter Lernzeitpunkt', '', 61);
-        $this->RegisterVariableString('HumidityJumpUntilReadable', 'Feuchtesprung bis', '', 71);
+        $this->RegisterVariableInteger(
+            'VentilationLevel',
+            'Lüftungsstufe (%)',
+            '~Intensity.100',
+            40
+        );
+
+        $this->RegisterVariableBoolean(
+            'LearningActive',
+            'Selbstlernen aktiv',
+            '~Switch',
+            50
+        );
+
+        $this->RegisterVariableInteger(
+            'LastLearningTS',
+            'Letzter Lernzeitpunkt (intern)',
+            '',
+            60
+        );
+
+        $this->RegisterVariableString(
+            'LastLearningReadable',
+            'Letzter Lernzeitpunkt',
+            '',
+            61
+        );
+
+        $this->RegisterVariableInteger(
+            'HumidityJumpUntilTS',
+            'Feuchtesprung bis (intern)',
+            '',
+            70
+        );
+
+        $this->RegisterVariableString(
+            'HumidityJumpUntilReadable',
+            'Feuchtesprung bis',
+            '',
+            71
+        );
 
         // =========================
-        // Timer (SYMBOLISCH KORREKT)
+        // Timer
         // =========================
         $this->RegisterTimer(
             'ControlTimer',
@@ -61,6 +114,21 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     public function ApplyChanges()
     {
         parent::ApplyChanges();
+    }
+
+    // ==========================================================
+    // WICHTIG: RequestAction
+    // ==========================================================
+    public function RequestAction($Ident, $Value)
+    {
+        switch ($Ident) {
+            case 'Run':
+                $this->Run();
+                break;
+
+            default:
+                throw new Exception('Invalid Ident: ' . $Ident);
+        }
     }
 
     // ==========================================================
@@ -78,15 +146,18 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
             $hID = $this->ReadPropertyInteger('IndoorHumidity' . $i);
             $tID = $this->ReadPropertyInteger('IndoorTemp' . $i);
 
-            if ($hID > 0 && $tID > 0 && IPS_VariableExists($hID) && IPS_VariableExists($tID)) {
-                $rh = floatval(GetValue($hID));
+            if ($hID > 0 && $tID > 0 &&
+                IPS_VariableExists($hID) &&
+                IPS_VariableExists($tID)
+            ) {
+                $rh   = floatval(GetValue($hID));
                 $temp = floatval(GetValue($tID));
                 $absValues[] = $this->CalcAbsoluteHumidity($temp, $rh);
             }
         }
 
         if (count($absValues) === 0) {
-            IPS_LogMessage('CRV', 'Keine gültigen Sensoren');
+            IPS_LogMessage('CRV', 'Keine gültigen Innensensoren');
             return;
         }
 
@@ -98,29 +169,39 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
         SetValue($this->GetIDForIdent('AbsHumidityMax24h'), round($max, 2));
         SetValue($this->GetIDForIdent('AbsHumidityMin24h'), round($min, 2));
 
+        // =========================
         // Feuchtesprung
+        // =========================
         $jumpUntil = GetValue($this->GetIDForIdent('HumidityJumpUntilTS'));
+
         if ($max >= ($avg + 1.0)) {
             $jumpUntil = $now + 3600;
             SetValue($this->GetIDForIdent('HumidityJumpUntilTS'), $jumpUntil);
         }
 
-        SetValue($this->GetIDForIdent('HumidityJumpUntilReadable'),
+        SetValue(
+            $this->GetIDForIdent('HumidityJumpUntilReadable'),
             $jumpUntil > 0 ? date('d.m.Y H:i:s', $jumpUntil) : '-'
         );
 
-        // Lernzeit
+        // =========================
+        // Lernen (Vorbereitung)
+        // =========================
         $lastLearn = GetValue($this->GetIDForIdent('LastLearningTS'));
+
         if ($lastLearn === 0 || ($now - $lastLearn) > 3600) {
             SetValue($this->GetIDForIdent('LastLearningTS'), $now);
             SetValue($this->GetIDForIdent('LearningActive'), true);
         }
 
-        SetValue($this->GetIDForIdent('LastLearningReadable'),
+        SetValue(
+            $this->GetIDForIdent('LastLearningReadable'),
             date('d.m.Y H:i:s', GetValue($this->GetIDForIdent('LastLearningTS')))
         );
 
+        // =========================
         // Lüftungsstufe
+        // =========================
         $percent = $this->MapHumidityToVentilation($avg);
         SetValue($this->GetIDForIdent('VentilationLevel'), $percent);
 
@@ -131,18 +212,20 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
     }
 
     // ==========================================================
+    // Hilfsfunktionen
+    // ==========================================================
     private function CalcAbsoluteHumidity(float $temp, float $rh): float
     {
         $sdd = 6.1078 * pow(10, (7.5 * $temp) / (237.3 + $temp));
-        $dd = $rh / 100 * $sdd;
+        $dd  = $rh / 100 * $sdd;
         return round(216.7 * ($dd / (273.15 + $temp)), 2);
     }
 
     private function MapHumidityToVentilation(float $abs): int
     {
-        if ($abs < 7.0) return 12;
-        if ($abs < 8.0) return 24;
-        if ($abs < 9.0) return 36;
+        if ($abs < 7.0)  return 12;
+        if ($abs < 8.0)  return 24;
+        if ($abs < 9.0)  return 36;
         if ($abs < 10.0) return 48;
         if ($abs < 11.0) return 60;
         if ($abs < 12.0) return 72;
