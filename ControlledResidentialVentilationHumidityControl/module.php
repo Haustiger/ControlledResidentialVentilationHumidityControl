@@ -6,6 +6,7 @@ class CRVHumidityControl extends IPSModule
     {
         parent::Create();
 
+        // Konfiguration
         $this->RegisterPropertyInteger("IndoorSensorCount", 1);
 
         for ($i = 1; $i <= 10; $i++) {
@@ -17,31 +18,31 @@ class CRVHumidityControl extends IPSModule
         $this->RegisterPropertyInteger("OutdoorTemperature", 0);
         $this->RegisterPropertyInteger("VentilationSetpointID", 0);
 
-        // Debug & Status Variablen (Build 5 – vollständig erhalten)
+        // Variablen
         $this->RegisterVariableFloat("AbsHumidityIndoorAvg", "Absolute Feuchte innen Ø (g/m³)");
-        $this->RegisterVariableFloat("AbsHumidityIndoorMin24h", "Absolute Feuchte innen Min (24h)");
-        $this->RegisterVariableFloat("AbsHumidityIndoorMax24h", "Absolute Feuchte innen Max (24h)");
+        $this->RegisterVariableFloat("AbsHumidityIndoorMin", "Absolute Feuchte innen Min (ab Start)");
+        $this->RegisterVariableFloat("AbsHumidityIndoorMax", "Absolute Feuchte innen Max (ab Start)");
         $this->RegisterVariableFloat("AbsHumidityOutdoor", "Absolute Feuchte außen (g/m³)");
 
         $this->RegisterVariableInteger("VentilationStage", "Lüftungsstufe");
         $this->RegisterVariableInteger("VentilationPercent", "Lüftungsleistung (%)", "~Intensity.100");
 
-        $this->RegisterVariableString("LastHumidityJump", "Letzter Feuchtesprung");
         $this->RegisterVariableString("LastControlRun", "Letzte Regelung");
 
-        $this->EnableAction("Run");
+        // Aktion
+        $this->EnableAction("ManualRun");
 
-        // Sicherer Timer (kein PHP-Parse-Risiko)
+        // Timer (5 Minuten)
         $this->RegisterTimer(
             "ControlTimer",
             300000,
-            'IPS_RequestAction($_IPS["TARGET"], "Run", 0);'
+            'IPS_RequestAction($_IPS["TARGET"], "ManualRun", 1);'
         );
     }
 
     public function RequestAction($Ident, $Value)
     {
-        if ($Ident === "Run") {
+        if ($Ident === "ManualRun") {
             $this->Run();
         }
     }
@@ -60,12 +61,29 @@ class CRVHumidityControl extends IPSModule
             }
         }
 
-        if (count($values) > 0) {
-            $avg = array_sum($values) / count($values);
-            SetValue($this->GetIDForIdent("AbsHumidityIndoorAvg"), round($avg, 2));
+        if (count($values) == 0) {
+            IPS_LogMessage("CRV Humidity Control", "Keine gültigen Innensensoren");
+            return;
         }
 
-        // FIX: Außenfeuchte wird jetzt zuverlässig berechnet
+        $avg = array_sum($values) / count($values);
+        SetValue($this->GetIDForIdent("AbsHumidityIndoorAvg"), round($avg, 2));
+
+        // Min / Max korrekt initialisieren (ab Modulstart)
+        $minID = $this->GetIDForIdent("AbsHumidityIndoorMin");
+        $maxID = $this->GetIDForIdent("AbsHumidityIndoorMax");
+
+        if (GetValue($minID) == 0) {
+            SetValue($minID, $avg);
+        }
+        if (GetValue($maxID) == 0) {
+            SetValue($maxID, $avg);
+        }
+
+        SetValue($minID, min(GetValue($minID), $avg));
+        SetValue($maxID, max(GetValue($maxID), $avg));
+
+        // Außenfeuchte
         $oh = $this->ReadPropertyInteger("OutdoorHumidity");
         $ot = $this->ReadPropertyInteger("OutdoorTemperature");
 
@@ -74,9 +92,33 @@ class CRVHumidityControl extends IPSModule
             SetValue($this->GetIDForIdent("AbsHumidityOutdoor"), round($absOut, 2));
         }
 
+        // Lüftungskennlinie (8 Stufen)
+        $stage = 1;
+        if ($avg >= 10.0) $stage = 8;
+        elseif ($avg >= 9.0) $stage = 7;
+        elseif ($avg >= 8.5) $stage = 6;
+        elseif ($avg >= 8.0) $stage = 5;
+        elseif ($avg >= 7.5) $stage = 4;
+        elseif ($avg >= 7.0) $stage = 3;
+        elseif ($avg >= 6.5) $stage = 2;
+
+        $percent = $stage * 12;
+
+        SetValue($this->GetIDForIdent("VentilationStage"), $stage);
+        SetValue($this->GetIDForIdent("VentilationPercent"), $percent);
+
+        // Stellwert setzen – FIX
+        $id = $this->ReadPropertyInteger("VentilationSetpointID");
+        if ($id > 0 && IPS_VariableExists($id)) {
+            RequestAction($id, $percent);
+        }
+
         SetValue($this->GetIDForIdent("LastControlRun"), date("d.m.Y H:i:s"));
 
-        IPS_LogMessage("CRVHC", "Version 3.2 Build 6: Regelung ausgeführt");
+        IPS_LogMessage(
+            "CRV Humidity Control",
+            "Build 6: Regelung ausgeführt – Stufe $stage ($percent %)"
+        );
     }
 
     private function CalcAbsHumidity(float $temp, float $rh): float
