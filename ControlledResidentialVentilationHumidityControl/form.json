@@ -7,6 +7,7 @@
       "minimum": 1,
       "maximum": 10
     },
+
     {
       "type": "ExpansionPanel",
       "caption": "Innensensoren",
@@ -33,6 +34,7 @@
         { "type": "SelectVariable", "name": "IndoorTemperature10", "caption": "Innen 10 – Temperatur" }
       ]
     },
+
     {
       "type": "ExpansionPanel",
       "caption": "Außensensoren",
@@ -41,6 +43,7 @@
         { "type": "SelectVariable", "name": "OutdoorTemperature", "caption": "Außen – Temperatur" }
       ]
     },
+
     {
       "type": "ExpansionPanel",
       "caption": "Lüftungssteuerung",
@@ -48,6 +51,7 @@
         { "type": "SelectVariable", "name": "VentilationSetpointID", "caption": "Lüftungs-Stellwert (%)" }
       ]
     },
+
     {
       "type": "ExpansionPanel",
       "caption": "Feuchtesprung",
@@ -62,10 +66,11 @@
         }
       ]
     },
+
     {
       "type": "Button",
       "caption": "Regelung jetzt ausführen",
-      "onClick": "IPS_RequestAction($_IPS[\"TARGET\"], \"Run\", 1);"
+      "onClick": "IPS_RequestAction($id, 'Run', 0);"
     }
   ]
 }

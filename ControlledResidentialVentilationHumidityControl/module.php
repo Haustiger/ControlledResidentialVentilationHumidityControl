@@ -100,26 +100,6 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
         SetValue($this->GetIDForIdent('AbsHumidityIndoorAvg'), $avgAbs);
         $this->UpdateMinMax24h($avgAbs);
 
-        /* ===== Absolute Feuchte außen (BUGFIX Build 6) ===== */
-
-        $outHumID = $this->ReadPropertyInteger('OutdoorHumidity');
-        $outTempID = $this->ReadPropertyInteger('OutdoorTemperature');
-
-        if ($outHumID > 0 && $outTempID > 0 &&
-            IPS_VariableExists($outHumID) &&
-            IPS_VariableExists($outTempID)
-        ) {
-            $rhOut = floatval(GetValue($outHumID));
-            $tempOut = floatval(GetValue($outTempID));
-
-            if ($rhOut > 1) {
-                $rhOut = $rhOut / 100.0;
-            }
-
-            $absOut = round($this->CalcAbsoluteHumidity($tempOut, $rhOut), 2);
-            SetValue($this->GetIDForIdent('AbsHumidityOutdoor'), $absOut);
-        }
-
         /* ===== Feuchtesprung ===== */
 
         $lastRel = GetValue($this->GetIDForIdent('LastAvgRelHumidity'));
