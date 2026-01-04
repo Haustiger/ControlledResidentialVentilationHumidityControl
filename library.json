@@ -1,9 +1,9 @@
 {
-  "id": "{A8C2F1B4-6D9F-4A2E-9E71-1C4F8D9B2A10}",
+  "id": "{8C7B6F9A-4E77-4F42-AE89-1C7A00000006}",
   "author": "Haustiger",
-  "name": "Controlled Residential Ventilation",
+  "name": "Controlled Residential Ventilation – Humidity Control",
   "url": "",
-  "version": "3.2",
-  "build": 5,
+  "version": "3",
+  "build": 6,
   "date": 0
 }

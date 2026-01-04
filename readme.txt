@@ -1,12 +1,21 @@
-Version 3.2 – Build 5
-Hersteller / Author: Haustiger
+Controlled Residential Ventilation – Humidity Control
+Version 3 · Build 6
+Author: Haustiger
 
-Neu:
-- Feuchtesprung-Erkennung (Standard +10 % rF / 5 Min)
-- +3 Lüftungsstufen Override
-- Debug-Variablen mit Datum & Uhrzeit
-- vollständig rückbaubar
+Build 6:
+- Bugfix: Absolute Feuchte außen wird berechnet und angezeigt
+- Keine Funktionsänderungen
+- Keine entfernten Felder
+- GUIDs SYMCON-konform
 
-Noch NICHT enthalten:
+Status:
+✔ Build 5 vollständig erhalten
+✔ Build 6 nur Bugfix
+✔ Modul updatefähig
+
+Nächste Schritte:
+- Verbesserte Feuchtesprung-Logik (rampeweise)
 - Nachtabschaltung
-- Selbstlernende Regelung
+- Außen-/Innen-Bewertung
+
+
