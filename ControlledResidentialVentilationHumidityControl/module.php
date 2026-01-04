@@ -26,10 +26,11 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
         $this->RegisterVariableInteger("VentilationStage", "Lüftungsstufe");
         $this->RegisterVariableInteger("VentilationPercent", "Lüftungsleistung (%)", "~Intensity.100");
 
+        // ✅ KORREKT: kein PHP-String-Parsing
         $this->RegisterTimer(
             "ControlTimer",
             300000,
-            "IPS_RequestAction($_IPS['TARGET'], 'Run', 0);"
+            'IPS_RequestAction($_IPS["TARGET"], "Run", 0);'
         );
 
         $this->EnableAction("Run");
@@ -71,7 +72,7 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
             }
         }
 
-        // BUGFIX Build 6: Außenfeuchte
+        // Außenfeuchte
         $oh = $this->ReadPropertyInteger("OutdoorHumidity");
         $ot = $this->ReadPropertyInteger("OutdoorTemperature");
 
