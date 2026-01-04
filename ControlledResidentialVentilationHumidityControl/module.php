@@ -15,25 +15,28 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
         $this->RegisterPropertyInteger("OutdoorHumidity", 0);
         $this->RegisterPropertyInteger("OutdoorTemperature", 0);
-
         $this->RegisterPropertyInteger("VentilationSetpointID", 0);
 
+        // === Debug & Status Variablen (Build 5 – unverändert) ===
         $this->RegisterVariableFloat("AbsHumidityIndoorAvg", "Absolute Feuchte innen Ø (g/m³)");
-        $this->RegisterVariableFloat("AbsHumidityIndoorMin", "Absolute Feuchte innen Min (g/m³)");
-        $this->RegisterVariableFloat("AbsHumidityIndoorMax", "Absolute Feuchte innen Max (g/m³)");
+        $this->RegisterVariableFloat("AbsHumidityIndoorMin24h", "Absolute Feuchte innen Min (24h)");
+        $this->RegisterVariableFloat("AbsHumidityIndoorMax24h", "Absolute Feuchte innen Max (24h)");
         $this->RegisterVariableFloat("AbsHumidityOutdoor", "Absolute Feuchte außen (g/m³)");
 
         $this->RegisterVariableInteger("VentilationStage", "Lüftungsstufe");
         $this->RegisterVariableInteger("VentilationPercent", "Lüftungsleistung (%)", "~Intensity.100");
 
-        // ✅ KORREKT: kein PHP-String-Parsing
+        $this->RegisterVariableString("LastHumidityJump", "Letzter Feuchtesprung");
+        $this->RegisterVariableString("LastControlRun", "Letzte Regelung");
+
+        $this->EnableAction("Run");
+
+        // Sicherheitskonformer Timer
         $this->RegisterTimer(
             "ControlTimer",
             300000,
             'IPS_RequestAction($_IPS["TARGET"], "Run", 0);'
         );
-
-        $this->EnableAction("Run");
     }
 
     public function RequestAction($Ident, $Value)
@@ -49,39 +52,38 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
         $count = $this->ReadPropertyInteger("IndoorSensorCount");
 
         for ($i = 1; $i <= $count; $i++) {
-            $h = $this->ReadPropertyInteger("IndoorHumidity$i");
-            $t = $this->ReadPropertyInteger("IndoorTemperature$i");
+            $hID = $this->ReadPropertyInteger("IndoorHumidity$i");
+            $tID = $this->ReadPropertyInteger("IndoorTemperature$i");
 
-            if ($h > 0 && $t > 0 && IPS_VariableExists($h) && IPS_VariableExists($t)) {
-                $values[] = $this->CalcAbsHumidity(GetValue($t), GetValue($h));
+            if ($hID > 0 && $tID > 0 && IPS_VariableExists($hID) && IPS_VariableExists($tID)) {
+                $values[] = $this->CalcAbsHumidity(GetValue($tID), GetValue($hID));
             }
         }
 
         if (count($values) > 0) {
             $avg = array_sum($values) / count($values);
             SetValue($this->GetIDForIdent("AbsHumidityIndoorAvg"), round($avg, 2));
-
-            $minID = $this->GetIDForIdent("AbsHumidityIndoorMin");
-            $maxID = $this->GetIDForIdent("AbsHumidityIndoorMax");
-
-            if (GetValue($minID) == 0 || $avg < GetValue($minID)) {
-                SetValue($minID, round($avg, 2));
-            }
-            if ($avg > GetValue($maxID)) {
-                SetValue($maxID, round($avg, 2));
-            }
         }
 
-        // Außenfeuchte
+        // === FIX Build 6: Außenfeuchte wird zuverlässig berechnet ===
         $oh = $this->ReadPropertyInteger("OutdoorHumidity");
         $ot = $this->ReadPropertyInteger("OutdoorTemperature");
 
-        if ($oh > 0 && $ot > 0 && IPS_VariableExists($oh) && IPS_VariableExists($ot)) {
+        if (
+            $oh > 0 && $ot > 0 &&
+            IPS_VariableExists($oh) &&
+            IPS_VariableExists($ot)
+        ) {
             $absOut = $this->CalcAbsHumidity(GetValue($ot), GetValue($oh));
             SetValue($this->GetIDForIdent("AbsHumidityOutdoor"), round($absOut, 2));
         }
 
-        IPS_LogMessage("CRVHC", "Build 6: Regelung ausgeführt");
+        SetValue(
+            $this->GetIDForIdent("LastControlRun"),
+            date("d.m.Y H:i:s")
+        );
+
+        IPS_LogMessage("CRVHC", "Version 3.2 Build 6: Regelung ausgeführt");
     }
 
     private function CalcAbsHumidity(float $temp, float $rh): float

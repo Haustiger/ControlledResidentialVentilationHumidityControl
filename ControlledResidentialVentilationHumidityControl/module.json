@@ -1,10 +1,10 @@
 {
-  "id": "{9E3C8E61-1B6A-4C1F-AF12-2E7D8C1A5B30}",
-  "name": "ControlledResidentialVentilationHumidityControl",
+  "id": "{8C7B6F9A-4E77-4F42-AE89-1A9E6C2F6A02}",
+  "name": "CRV Humidity Control",
   "type": 3,
   "vendor": "Haustiger",
   "aliases": [
-    "CRV Humidity Control"
+    "Kontrollierte Wohnraumlüftung – Feuchteregelung"
   ],
   "parentRequirements": [],
   "childRequirements": [],
