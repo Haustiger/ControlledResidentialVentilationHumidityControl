@@ -65,6 +65,8 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
     public function Run()
     {
+        /* ===== Innen ===== */
+
         $count = $this->ReadPropertyInteger('IndoorSensorCount');
 
         $absIndoor = [];
@@ -99,6 +101,26 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
         SetValue($this->GetIDForIdent('AbsHumidityIndoorAvg'), $avgAbs);
         $this->UpdateMinMax24h($avgAbs);
+
+        /* ===== Außen (FIX Build 6) ===== */
+
+        $outH = $this->ReadPropertyInteger('OutdoorHumidity');
+        $outT = $this->ReadPropertyInteger('OutdoorTemperature');
+
+        if ($outH > 0 && $outT > 0 &&
+            IPS_VariableExists($outH) &&
+            IPS_VariableExists($outT)
+        ) {
+            $rhOut = floatval(GetValue($outH));
+            $tempOut = floatval(GetValue($outT));
+
+            if ($rhOut > 1) {
+                $rhOut = $rhOut / 100.0;
+            }
+
+            $absOut = round($this->CalcAbsoluteHumidity($tempOut, $rhOut), 2);
+            SetValue($this->GetIDForIdent('AbsHumidityOutdoor'), $absOut);
+        }
 
         /* ===== Feuchtesprung ===== */
 
