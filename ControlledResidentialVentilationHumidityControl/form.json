@@ -46,7 +46,7 @@
 
     {
       "type": "ExpansionPanel",
-      "caption": "Außensensoren",
+      "caption": "Außen",
       "items": [
         { "type": "SelectVariable", "name": "OutdoorHumidity", "caption": "Außen – relative Feuchte" },
         { "type": "SelectVariable", "name": "OutdoorTemperature", "caption": "Außen – Temperatur" }
@@ -57,15 +57,14 @@
       "type": "ExpansionPanel",
       "caption": "Nachtabschaltung",
       "items": [
-        { "type": "SelectVariable", "name": "NightSwitchID", "caption": "Nachtabschaltung EIN/AUS" },
-        { "type": "TimeSpinner", "name": "NightStart", "caption": "Nachtbeginn" },
-        { "type": "TimeSpinner", "name": "NightEnd", "caption": "Nachtende" }
+        { "type": "CheckBox", "name": "NightShutdownActive", "caption": "Nachtabschaltung aktiv" },
+        { "type": "TimeRangeSelector", "name": "NightTimeRange", "caption": "Zeitbereich Nachtabschaltung" }
       ]
     },
 
     {
       "type": "ExpansionPanel",
-      "caption": "Lüftungssteuerung",
+      "caption": "Lüftung",
       "items": [
         { "type": "SelectVariable", "name": "VentilationSetpointID", "caption": "Lüftungs-Stellwert (%)" }
       ]
@@ -78,7 +77,7 @@
         {
           "type": "NumberSpinner",
           "name": "HumidityJumpThreshold",
-          "caption": "Feuchtesprung Schwellwert (% rF / 5 Min)",
+          "caption": "Feuchtesprung (% rF / 5 Min)",
           "minimum": 5,
           "maximum": 30,
           "digits": 1

@@ -1,86 +1,59 @@
 Controlled Residential Ventilation – Humidity Control
 Version 3.2 – Build 9
-Autor / Hersteller: Haustiger
+Author: Haustiger
 
-================================================================
-ZIEL
-================================================================
+ZWECK
 Dieses Modul steuert eine kontrollierte Wohnraumlüftung
-feuchtegeführt auf Basis der ABSOLUTEN FEUCHTE (g/m³).
+auf Basis der absoluten Feuchte (g/m³).
 
-Es berücksichtigt:
-- bis zu 10 Innensensoren
-- Außentemperatur und Außenfeuchte
-- Feuchtesprünge (Duschen, Kochen, Baden)
-- Nachtabschaltung mit Schallschutz
-- Feuchtesprung-Override während der Nacht
-
-================================================================
 GRUNDPRINZIP
-================================================================
-1. Berechnung der absoluten Feuchte je Sensor
-2. Mittelwertbildung innen
-3. 8-stufige Lüftungskennlinie
-4. Feuchtesprung-Erkennung (+X % rF / 5 Minuten)
-5. Sommer-/Winter-Bewertung (ab Build 8)
-6. Nachtabschaltung mit Override (Build 9)
+- Umrechnung relativer Feuchte + Temperatur → absolute Feuchte
+- Mittelwertbildung über bis zu 10 Innensensoren
+- Ermittlung MIN / MAX (laufend)
+- 8-stufige Lüftungskennlinie
+- Optionaler Feuchtesprung (z.B. Duschen, Kochen)
 
-================================================================
-NACHTABSCHALTUNG (Build 9)
-================================================================
-- Aktivierung über boolesche Variable (z. B. KNX DPT 1.001)
-- Frei einstellbare Uhrzeiten
-- Während der Nacht:
-  → Lüftung auf Stufe 1 begrenzt
-- Bei Feuchtesprung:
-  → Nacht-Override für max. 60 Minuten
+LÜFTUNGSSTUFEN
+Stufe 1 = 12 %
+Stufe 2 = 24 %
+Stufe 3 = 36 %
+Stufe 4 = 48 %
+Stufe 5 = 60 %
+Stufe 6 = 72 %
+Stufe 7 = 84 %
+Stufe 8 = 96 %
 
-Statusvariablen:
-- Nachtabschaltung aktiv
-- Nacht-Override aktiv
-- Nacht-Override bis (Datum/Uhrzeit)
-
-================================================================
 FEUCHTESPRUNG
-================================================================
-Ein Feuchtesprung wird erkannt, wenn:
-- Ø relative Feuchte innerhalb von 5 Minuten
-  um den eingestellten Schwellwert steigt
+Ein Feuchtesprung liegt vor, wenn:
+Δ relative Feuchte ≥ eingestellter Schwellwert innerhalb von 5 Minuten.
 
-Reaktion:
-- Zielstufe = aktuelle Stufe + 3
-- Erhöhung stufenweise (Rampe)
-- Debug vollständig sichtbar
+Wirkung:
+- aktuelle Lüftungsstufe +3
+- zeitlich begrenzt (15 Minuten)
+- Debug-Variablen dokumentieren Erkennung und Dauer
 
-================================================================
-EMPFOHLENE SENSORDATEN
-================================================================
-Relative Feuchte:
-- 0–100 % oder 0.0–1.0
-Temperatur:
-- °C (Float)
+NACHTABSCHALTUNG
+- Optional aktivierbar
+- Zeitbereich frei definierbar
+- Während der Nacht wird die Regelung ausgesetzt
+- Feuchtesprung-Override ist vorbereitet (folgende Builds)
 
-KNX:
-- DPT 9.xxx empfohlen
+AUSSENBEWERTUNG
+- Absolute Feuchte außen wird berechnet
+- Aktuell nur diagnostisch
+- Gewichtung und Sommer/Winter-Logik folgen
 
-================================================================
+DEBUG / STATUS
+- Alle Regelentscheidungen werden im SYMCON-Status protokolliert
+- Zusätzliche Debug-Variablen zur Nachvollziehbarkeit
+
 HINWEISE
-================================================================
-- Stellwert-Variable muss SCHREIBBAR sein
-- Nachtabschaltung überschreibt normale Regelung
-- Feuchtesprung kann Nachtabschaltung temporär aufheben
+- Relative Feuchte kann als Prozent (0–100) oder Faktor (0–1) geliefert werden
+- Stellwert-Variable muss schreibbar sein (kein ReadOnly)
+- KNX, Modbus oder virtuelle Variablen sind geeignet
 
-================================================================
-NÄCHSTE GEPLANTE BUILDS
-================================================================
-Build 10:
-- Ist-Lüftungsstufe überwachen
-- Rückmeldeprüfung
-
-Build 11:
-- Selbstlernende Anpassung der Kennlinie
-
-================================================================
-STATUS
-================================================================
-Build 9 ist stabil, getestet und funktionsfähig.
+NÄCHSTE SCHRITTE (geplant)
+- Nachtabschaltung mit Feuchtesprung-Override
+- adaptive Außen-/Innen-Gewichtung
+- selbstlernende Stufenanpassung
+- Lüftungsampel im WebFront
