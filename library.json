@@ -1,13 +1,24 @@
 {
-  "id": "{A1E39D21-5F5E-4E6C-9C2E-8B4D2F5B0800}",
-  "name": "ControlledResidentialVentilationHumidityControl",
-  "type": 3,
-  "vendor": "Haustiger",
-  "aliases": [
-    "CRV Humidity Control"
-  ],
-  "parentRequirements": [],
-  "childRequirements": [],
-  "implemented": [],
-  "prefix": "CRVHC"
+  "id": "{8C7B6F9A-4E77-4F42-AE89-2F9B1D4C0900}",
+  "author": "Haustiger",
+  "name": "ControlledResidentialVentilation",
+  "url": "",
+  "version": "3.2",
+  "build": 8,
+  "date": 0,
+  "modules": [
+    {
+      "id": "{A1E39D21-5F5E-4E6C-9C2E-8B4D2F5B0800}",
+      "name": "ControlledResidentialVentilationHumidityControl",
+      "type": 3,
+      "vendor": "Haustiger",
+      "aliases": [
+        "CRV Humidity Control"
+      ],
+      "parentRequirements": [],
+      "childRequirements": [],
+      "implemented": [],
+      "prefix": "CRVHC"
+    }
+  ]
 }
