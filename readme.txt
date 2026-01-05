@@ -50,3 +50,28 @@ Status
 ------
 Build 8 gilt als stabiler Referenzstand.
 Weitere Builds bauen ausschließlich darauf auf.
+
+
+
+
+Controlled Residential Ventilation – Humidity Control
+Version 3.2 – Build 9
+Author: Haustiger
+
+Änderung gegenüber Build 8
+--------------------------
+Bugfix: Absolute Feuchte außen
+
+In Build 8 war die Variable "Absolute Feuchte außen" registriert,
+wurde jedoch nicht berechnet oder beschrieben.
+
+Build 9 ergänzt:
+- Berechnung absolute Feuchte außen aus:
+  - Außen-Temperatur
+  - Außen-relativer Feuchte
+- Physikalisch korrekte Formel
+- Aktualisierung bei jeder Regelung
+
+Keine weiteren Änderungen.
+Keine Funktionen entfernt.
+

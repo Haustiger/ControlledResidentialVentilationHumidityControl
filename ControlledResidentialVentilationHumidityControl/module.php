@@ -53,8 +53,9 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
     public function Run()
     {
-        $count = $this->ReadPropertyInteger('IndoorSensorCount');
+        /* ================= Innen ================= */
 
+        $count = $this->ReadPropertyInteger('IndoorSensorCount');
         $absIndoor = [];
         $relIndoor = [];
 
@@ -85,6 +86,25 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
         SetValue($this->GetIDForIdent('AbsHumidityIndoorAvg'), $avgAbs);
         $this->UpdateMinMax24h($avgAbs);
 
+        /* ================= Außen (NEU – Build 9) ================= */
+
+        $outH = $this->ReadPropertyInteger('OutdoorHumidity');
+        $outT = $this->ReadPropertyInteger('OutdoorTemperature');
+
+        if ($outH > 0 && $outT > 0 && IPS_VariableExists($outH) && IPS_VariableExists($outT)) {
+            $rhOut = floatval(GetValue($outH));
+            $tOut  = floatval(GetValue($outT));
+
+            if ($rhOut > 1) {
+                $rhOut /= 100.0;
+            }
+
+            $absOut = round($this->CalcAbsoluteHumidity($tOut, $rhOut), 2);
+            SetValue($this->GetIDForIdent('AbsHumidityOutdoor'), $absOut);
+        }
+
+        /* ================= Feuchtesprung ================= */
+
         $lastRel = GetValue($this->GetIDForIdent('LastAvgRelHumidity'));
         $delta = round($avgRel - $lastRel, 2);
         $threshold = $this->ReadPropertyFloat('HumidityJumpThreshold');
@@ -108,6 +128,8 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
         SetValue($this->GetIDForIdent('LastAvgRelHumidity'), $avgRel);
 
+        /* ================= Lüftungsstufe ================= */
+
         $stage = $this->DetermineStage($avgAbs);
 
         if (GetValue($this->GetIDForIdent('HumidityJumpActive'))) {
@@ -125,7 +147,7 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
             @RequestAction($targetID, $percent);
         }
 
-        IPS_LogMessage('CRVHC', 'Build 8: Regelung -> Stufe ' . $stage . ' (' . $percent . '%)');
+        IPS_LogMessage('CRVHC', 'Build 9: Regelung -> Stufe ' . $stage . ' (' . $percent . '%)');
     }
 
     private function DetermineStage(float $absIndoor): int
