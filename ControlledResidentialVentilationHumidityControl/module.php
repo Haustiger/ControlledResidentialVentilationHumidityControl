@@ -43,6 +43,9 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
         $this->RegisterVariableFloat('HumidityJumpDelta', 'Feuchtesprung Δ rF (%)', '', 83);
         $this->RegisterVariableFloat('HumidityJumpThresholdUsed', 'Feuchtesprung Schwellwert (%)', '', 84);
 
+        // neu Build 7
+        $this->RegisterVariableInteger('HumidityJumpTargetStage', 'Feuchtesprung Zielstufe', '', 85);
+
         $this->RegisterVariableFloat('LastAvgRelHumidity', 'Ø rel. Feuchte vor 5 Min (%)', '', 90);
 
         /* ================= Timer ================= */
@@ -65,8 +68,6 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
     public function Run()
     {
-        /* ===== Innen ===== */
-
         $count = $this->ReadPropertyInteger('IndoorSensorCount');
 
         $absIndoor = [];
@@ -102,23 +103,16 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
         SetValue($this->GetIDForIdent('AbsHumidityIndoorAvg'), $avgAbs);
         $this->UpdateMinMax24h($avgAbs);
 
-        /* ===== Außen (FIX Build 6) ===== */
+        /* ===== Außenfeuchte ===== */
 
         $outH = $this->ReadPropertyInteger('OutdoorHumidity');
         $outT = $this->ReadPropertyInteger('OutdoorTemperature');
 
-        if ($outH > 0 && $outT > 0 &&
-            IPS_VariableExists($outH) &&
-            IPS_VariableExists($outT)
-        ) {
-            $rhOut = floatval(GetValue($outH));
-            $tempOut = floatval(GetValue($outT));
-
-            if ($rhOut > 1) {
-                $rhOut = $rhOut / 100.0;
-            }
-
-            $absOut = round($this->CalcAbsoluteHumidity($tempOut, $rhOut), 2);
+        if ($outH > 0 && $outT > 0 && IPS_VariableExists($outH) && IPS_VariableExists($outT)) {
+            $rh = floatval(GetValue($outH));
+            $temp = floatval(GetValue($outT));
+            if ($rh > 1) $rh /= 100.0;
+            $absOut = round($this->CalcAbsoluteHumidity($temp, $rh), 2);
             SetValue($this->GetIDForIdent('AbsHumidityOutdoor'), $absOut);
         }
 
@@ -137,12 +131,13 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
             SetValue($this->GetIDForIdent('HumidityJumpActive'), true);
             SetValue($this->GetIDForIdent('HumidityJumpDetectedAt'), date('d.m.Y H:i:s', $now));
             SetValue($this->GetIDForIdent('HumidityJumpUntil'), date('d.m.Y H:i:s', $now + 900));
+
+            $baseStage = $this->DetermineStage($avgAbs);
+            SetValue($this->GetIDForIdent('HumidityJumpTargetStage'), min(8, $baseStage + 3));
         }
 
-        $jumpActiveUntil = strtotime(GetValue($this->GetIDForIdent('HumidityJumpUntil')));
-        $jumpActive = GetValue($this->GetIDForIdent('HumidityJumpActive'));
-
-        if ($jumpActive && $now > $jumpActiveUntil) {
+        $jumpUntil = strtotime(GetValue($this->GetIDForIdent('HumidityJumpUntil')));
+        if (GetValue($this->GetIDForIdent('HumidityJumpActive')) && $now > $jumpUntil) {
             SetValue($this->GetIDForIdent('HumidityJumpActive'), false);
         }
 
@@ -150,15 +145,21 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
 
         /* ===== Lüftungsstufe ===== */
 
-        $stage = $this->DetermineStage($avgAbs);
+        $baseStage = $this->DetermineStage($avgAbs);
+        $currentStage = GetValue($this->GetIDForIdent('VentilationStage'));
 
         if (GetValue($this->GetIDForIdent('HumidityJumpActive'))) {
-            $stage = min(8, $stage + 3);
+            $target = GetValue($this->GetIDForIdent('HumidityJumpTargetStage'));
+            if ($currentStage < $target) {
+                $baseStage = $currentStage + 1;
+            } else {
+                $baseStage = $target;
+            }
         }
 
-        $percent = $this->StageToPercent($stage);
+        $percent = $this->StageToPercent($baseStage);
 
-        SetValue($this->GetIDForIdent('VentilationStage'), $stage);
+        SetValue($this->GetIDForIdent('VentilationStage'), $baseStage);
         SetValue($this->GetIDForIdent('VentilationSetpointPercent'), $percent);
         SetValue($this->GetIDForIdent('LastCalcTime'), date('d.m.Y H:i:s'));
 
@@ -167,10 +168,7 @@ class ControlledResidentialVentilationHumidityControl extends IPSModule
             @RequestAction($targetID, $percent);
         }
 
-        IPS_LogMessage(
-            'CRVHC',
-            'Build 6: Regelung -> Stufe ' . $stage . ' (' . $percent . '%)'
-        );
+        IPS_LogMessage('CRVHC', 'Build 7: Regelung -> Stufe ' . $baseStage . ' (' . $percent . '%)');
     }
 
     /* =================================================== */
