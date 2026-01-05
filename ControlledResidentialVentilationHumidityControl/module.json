@@ -1,11 +1,13 @@
 {
-  "id": "{A1E39D21-5F5E-4E6C-9C2E-8B4D2F5B0901}",
-  "name": "Controlled Residential Ventilation Humidity Control",
+  "id": "{A1E39D21-5F5E-4E6C-9C2E-8B4D2F5B0800}",
+  "name": "ControlledResidentialVentilationHumidityControl",
   "type": 3,
   "vendor": "Haustiger",
-  "aliases": ["CRV Humidity Control"],
+  "aliases": [
+    "CRV Humidity Control"
+  ],
   "parentRequirements": [],
   "childRequirements": [],
   "implemented": [],
-  "prefix": "ControlledResidentialVentilationHumidityControl"
+  "prefix": "CRVHC"
 }
