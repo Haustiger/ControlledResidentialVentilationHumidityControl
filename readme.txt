@@ -75,3 +75,24 @@ Build 9 ergänzt:
 Keine weiteren Änderungen.
 Keine Funktionen entfernt.
 
+
+
+
+Controlled Residential Ventilation – Humidity Control
+Version 3.2 Build 10
+Author & Manufacturer: Haustiger
+
+NEU in Build 10:
+- Einführung der Außenbewertung
+- Berechnung absolute Feuchte außen
+- Vergleich Innen Ø vs. Außen
+- Debug-Variablen:
+  - Außenbewertung aktiv
+  - Feuchte-Differenz
+  - Bewertungsergebnis
+
+Keine entfernten Funktionen.
+Keine GUID-Änderungen.
+Kompatibel zu IP-SYMCON.
+
+
