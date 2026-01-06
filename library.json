@@ -3,8 +3,8 @@
   "author": "Haustiger",
   "name": "ControlledResidentialVentilation",
   "url": "",
-  "version": "3.2",
-  "build": 10,
+  "version": "3.3",
+  "build": 11,
   "date": 0,
   "modules": [
     {
