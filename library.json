@@ -1,5 +1,5 @@
 {
-  "id": "{9A1B6C23-2C4A-4C3B-8E5F-1A9C0B001011}",
+  "id": "{9A1B6C23-2C4A-4C3B-8E5F-1A9C0B001012}",
   "author": "Haustiger",
   "name": "CRV Humidity Control",
   "url": "",
@@ -7,6 +7,6 @@
     "version": "6.0"
   },
   "version": "3.2",
-  "build": 11,
+  "build": 12,
   "date": 0
 }
