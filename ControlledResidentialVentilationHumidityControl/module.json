@@ -1,6 +1,6 @@
 {
-  "id": "{A1E39D21-5F5E-4E6C-9C2E-8B4D2F5B0800}",
-  "name": "ControlledResidentialVentilationHumidityControl",
+  "id": "{A3F47D52-1E62-4E2F-BD92-7C4A1F001011}",
+  "name": "CRV Humidity Control",
   "type": 3,
   "vendor": "Haustiger",
   "aliases": [

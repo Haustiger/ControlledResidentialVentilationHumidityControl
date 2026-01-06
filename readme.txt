@@ -96,3 +96,29 @@ Keine GUID-Änderungen.
 Kompatibel zu IP-SYMCON.
 
 
+
+
+CRV Humidity Control
+Version 3.2 – Build 11
+Autor: Haustiger
+
+Dieses Modul steuert eine kontrollierte Wohnraumlüftung
+auf Basis der absoluten Feuchte (g/m³).
+
+Neu in Build 11:
+- Gewichtete Außenbewertung
+- Außenfeuchte kann anteilig in die Regelung einfließen
+- Gewichtung 0–100 %
+- Debug-Variablen zur Nachvollziehbarkeit
+
+Regelprinzip:
+1. Berechnung absoluter Feuchte je Sensor
+2. Mittelwertbildung Innen
+3. Optional: gewichtete Kombination Innen/Außen
+4. Stufenzuordnung (1–8)
+5. Feuchtesprung (+3 Stufen bei +X % rF)
+6. Ausgabe als Prozentwert
+
+Alle bestehenden Funktionen aus Build 10 wurden unverändert übernommen.
+
+
