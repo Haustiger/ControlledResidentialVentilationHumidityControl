@@ -96,3 +96,22 @@ Keine GUID-Änderungen.
 Kompatibel zu IP-SYMCON.
 
 
+
+
+Controlled Residential Ventilation – Humidity Control
+Version 3.2 Build 11
+Author: Haustiger
+
+NEU:
+- Gewichtete Außenbewertung
+- Außenluft reduziert Lüftungsstufe nur bei günstiger Feuchte
+- Gewichtungsfaktor 0–100 %
+- Vollständige Debug-Transparenz
+
+STABIL:
+- Feuchtesprung
+- 8-Stufen-Kennlinie
+- 10 Sensoren
+- Button & Timer
+
+

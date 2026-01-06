@@ -12,14 +12,44 @@
       "type": "ExpansionPanel",
       "caption": "Innensensoren",
       "items": [
-        { "type": "SelectVariable", "name": "IndoorHumidity1", "caption": "Innen 1 – Feuchte" },
+        {
+          "type": "Label",
+          "caption": "Relative Feuchte und Temperatur je Sensor"
+        },
+
+        {
+          "type": "SelectVariable",
+          "name": "IndoorHumidity1",
+          "caption": "Innen 1 – relative Feuchte"
+        },
         { "type": "SelectVariable", "name": "IndoorTemperature1", "caption": "Innen 1 – Temperatur" },
 
-        { "type": "SelectVariable", "name": "IndoorHumidity2", "caption": "Innen 2 – Feuchte" },
+        { "type": "SelectVariable", "name": "IndoorHumidity2", "caption": "Innen 2 – relative Feuchte" },
         { "type": "SelectVariable", "name": "IndoorTemperature2", "caption": "Innen 2 – Temperatur" },
 
-        { "type": "SelectVariable", "name": "IndoorHumidity3", "caption": "Innen 3 – Feuchte" },
-        { "type": "SelectVariable", "name": "IndoorTemperature3", "caption": "Innen 3 – Temperatur" }
+        { "type": "SelectVariable", "name": "IndoorHumidity3", "caption": "Innen 3 – relative Feuchte" },
+        { "type": "SelectVariable", "name": "IndoorTemperature3", "caption": "Innen 3 – Temperatur" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity4", "caption": "Innen 4 – relative Feuchte" },
+        { "type": "SelectVariable", "name": "IndoorTemperature4", "caption": "Innen 4 – Temperatur" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity5", "caption": "Innen 5 – relative Feuchte" },
+        { "type": "SelectVariable", "name": "IndoorTemperature5", "caption": "Innen 5 – Temperatur" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity6", "caption": "Innen 6 – relative Feuchte" },
+        { "type": "SelectVariable", "name": "IndoorTemperature6", "caption": "Innen 6 – Temperatur" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity7", "caption": "Innen 7 – relative Feuchte" },
+        { "type": "SelectVariable", "name": "IndoorTemperature7", "caption": "Innen 7 – Temperatur" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity8", "caption": "Innen 8 – relative Feuchte" },
+        { "type": "SelectVariable", "name": "IndoorTemperature8", "caption": "Innen 8 – Temperatur" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity9", "caption": "Innen 9 – relative Feuchte" },
+        { "type": "SelectVariable", "name": "IndoorTemperature9", "caption": "Innen 9 – Temperatur" },
+
+        { "type": "SelectVariable", "name": "IndoorHumidity10", "caption": "Innen 10 – relative Feuchte" },
+        { "type": "SelectVariable", "name": "IndoorTemperature10", "caption": "Innen 10 – Temperatur" }
       ]
     },
 
@@ -27,23 +57,57 @@
       "type": "ExpansionPanel",
       "caption": "Außensensoren",
       "items": [
-        { "type": "SelectVariable", "name": "OutdoorHumidity", "caption": "Außen – Feuchte" },
-        { "type": "SelectVariable", "name": "OutdoorTemperature", "caption": "Außen – Temperatur" }
+        {
+          "type": "SelectVariable",
+          "name": "OutdoorHumidity",
+          "caption": "Außen – relative Feuchte"
+        },
+        {
+          "type": "SelectVariable",
+          "name": "OutdoorTemperature",
+          "caption": "Außen – Temperatur"
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "OutdoorWeightPercent",
+          "caption": "Gewichtung Außenbewertung (%)",
+          "minimum": 0,
+          "maximum": 100
+        }
       ]
     },
 
     {
       "type": "ExpansionPanel",
-      "caption": "Lüftung",
+      "caption": "Lüftungssteuerung",
       "items": [
-        { "type": "SelectVariable", "name": "VentilationSetpointID", "caption": "Stellwert (%)" }
+        {
+          "type": "SelectVariable",
+          "name": "VentilationSetpointID",
+          "caption": "Lüftungs-Stellwert (%)"
+        }
+      ]
+    },
+
+    {
+      "type": "ExpansionPanel",
+      "caption": "Feuchtesprung",
+      "items": [
+        {
+          "type": "NumberSpinner",
+          "name": "HumidityJumpThreshold",
+          "caption": "Feuchtesprung Schwellwert (% rF / 5 Min)",
+          "minimum": 5,
+          "maximum": 30,
+          "digits": 1
+        }
       ]
     },
 
     {
       "type": "Button",
       "caption": "Regelung jetzt ausführen",
-      "onClick": "IPS_RequestAction($id, 'Run', 0);"
+      "onClick": "IPS_RequestAction($id, 'Run', 1);"
     }
   ]
 }
